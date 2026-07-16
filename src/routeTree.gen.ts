@@ -15,6 +15,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as PayTokenRouteImport } from './routes/pay.$token'
 import { Route as DashboardTransactionsRouteImport } from './routes/dashboard.transactions'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
 import { Route as DashboardSecurityRouteImport } from './routes/dashboard.security'
@@ -52,6 +53,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DashboardRoute,
+} as any)
+const PayTokenRoute = PayTokenRouteImport.update({
+  id: '/pay/$token',
+  path: '/pay/$token',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardTransactionsRoute = DashboardTransactionsRouteImport.update({
   id: '/transactions',
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/security': typeof DashboardSecurityRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/transactions': typeof DashboardTransactionsRoute
+  '/pay/$token': typeof PayTokenRoute
   '/dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRoutesByTo {
@@ -116,6 +123,7 @@ export interface FileRoutesByTo {
   '/dashboard/security': typeof DashboardSecurityRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/transactions': typeof DashboardTransactionsRoute
+  '/pay/$token': typeof PayTokenRoute
   '/dashboard': typeof DashboardIndexRoute
 }
 export interface FileRoutesById {
@@ -132,6 +140,7 @@ export interface FileRoutesById {
   '/dashboard/security': typeof DashboardSecurityRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/transactions': typeof DashboardTransactionsRoute
+  '/pay/$token': typeof PayTokenRoute
   '/dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRouteTypes {
@@ -149,6 +158,7 @@ export interface FileRouteTypes {
     | '/dashboard/security'
     | '/dashboard/settings'
     | '/dashboard/transactions'
+    | '/pay/$token'
     | '/dashboard/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -163,6 +173,7 @@ export interface FileRouteTypes {
     | '/dashboard/security'
     | '/dashboard/settings'
     | '/dashboard/transactions'
+    | '/pay/$token'
     | '/dashboard'
   id:
     | '__root__'
@@ -178,6 +189,7 @@ export interface FileRouteTypes {
     | '/dashboard/security'
     | '/dashboard/settings'
     | '/dashboard/transactions'
+    | '/pay/$token'
     | '/dashboard/'
   fileRoutesById: FileRoutesById
 }
@@ -187,6 +199,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PortalRoute: typeof PortalRoute
   SignupRoute: typeof SignupRoute
+  PayTokenRoute: typeof PayTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -232,6 +245,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/pay/$token': {
+      id: '/pay/$token'
+      path: '/pay/$token'
+      fullPath: '/pay/$token'
+      preLoaderRoute: typeof PayTokenRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/dashboard/transactions': {
       id: '/dashboard/transactions'
@@ -317,6 +337,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PortalRoute: PortalRoute,
   SignupRoute: SignupRoute,
+  PayTokenRoute: PayTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
