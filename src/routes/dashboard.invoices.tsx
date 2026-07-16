@@ -1,18 +1,35 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Download, Plus } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { Copy, Download, ExternalLink, Plus } from "lucide-react";
 import { invoices, fmt } from "@/lib/mock-data";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { CreateDocDialog } from "@/components/create-doc-dialog";
+import { listDocs, payLink, docTotal, type PayDoc } from "@/lib/payment-store";
 
 export const Route = createFileRoute("/dashboard/invoices")({
   component: InvoicesPage,
 });
 
 function InvoicesPage() {
+  const [open, setOpen] = useState(false);
+  const [userDocs, setUserDocs] = useState<PayDoc[]>([]);
+
+  useEffect(() => {
+    const refresh = () => setUserDocs(listDocs().filter((d) => d.kind === "invoice"));
+    refresh();
+    window.addEventListener("payflow:docs-changed", refresh);
+    return () => window.removeEventListener("payflow:docs-changed", refresh);
+  }, []);
+
   const totalOutstanding = invoices
     .filter((i) => ["Unpaid", "Partially Paid", "Overdue"].includes(i.status))
     .reduce((sum, i) => sum + (i.amount - i.paid), 0);
+
+  const copyLink = (token: string) => {
+    navigator.clipboard.writeText(payLink(token));
+  };
 
   return (
     <div className="space-y-6">
@@ -26,11 +43,52 @@ function InvoicesPage() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline"><Download className="mr-1 h-4 w-4" /> Export</Button>
-          <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+          <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => setOpen(true)}>
             <Plus className="mr-1 h-4 w-4" /> New invoice
           </Button>
         </div>
       </div>
+
+      {userDocs.length > 0 && (
+        <div className="overflow-hidden rounded-2xl border border-primary/30 bg-card">
+          <div className="border-b border-border bg-primary/5 px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary">Your payment links</p>
+          </div>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-secondary/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
+                <th className="px-4 py-3 font-medium">Number</th>
+                <th className="px-4 py-3 font-medium">Client</th>
+                <th className="px-4 py-3 font-medium">Amount</th>
+                <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium text-right">Payment link</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {userDocs.map((d) => (
+                <tr key={d.token} className="hover:bg-secondary/30">
+                  <td className="px-4 py-3 font-medium">{d.number}</td>
+                  <td className="px-4 py-3">{d.clientName}</td>
+                  <td className="px-4 py-3 font-medium">{fmt(docTotal(d), d.currency)}</td>
+                  <td className="px-4 py-3"><StatusBadge status={d.status} /></td>
+                  <td className="px-4 py-3">
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" size="sm" onClick={() => copyLink(d.token)}>
+                        <Copy className="mr-1 h-3 w-3" /> Copy
+                      </Button>
+                      <Button asChild size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
+                        <Link to="/pay/$token" params={{ token: d.token }} target="_blank">
+                          <ExternalLink className="mr-1 h-3 w-3" /> Open
+                        </Link>
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <div className="overflow-hidden rounded-2xl border border-border bg-card">
         <table className="w-full text-sm">
@@ -66,6 +124,8 @@ function InvoicesPage() {
           </tbody>
         </table>
       </div>
+
+      <CreateDocDialog open={open} onOpenChange={setOpen} kind="invoice" />
     </div>
   );
 }
