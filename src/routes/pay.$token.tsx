@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, Bitcoin, Building2, CheckCircle2, CreditCard, Lock, ShieldCheck, Wallet } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, Bitcoin, Building2, CheckCircle2, Copy, CreditCard, FileText, Lock, ShieldCheck, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getDoc, markPaid, docTotal, type PayDoc } from "@/lib/payment-store";
+import { getDoc, markPaid, docTotal, payLink, type PayDoc } from "@/lib/payment-store";
 import { fmt, type PaymentMethod } from "@/lib/mock-data";
 import { StatusBadge } from "@/components/status-badge";
 
