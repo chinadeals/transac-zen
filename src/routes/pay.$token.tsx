@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, Bitcoin, Building2, CheckCircle2, CreditCard, Lock, ShieldCheck, Wallet } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, Bitcoin, Building2, CheckCircle2, Copy, CreditCard, FileText, Lock, ShieldCheck, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,12 +21,12 @@ export const Route = createFileRoute("/pay/$token")({
 
 type Step = "review" | "method" | "details" | "done";
 
-const METHODS: { id: PaymentMethod; label: string; icon: React.ComponentType<{ className?: string }>; hint: string }[] = [
-  { id: "Visa", label: "Card (Visa / Mastercard / Amex)", icon: CreditCard, hint: "Secure card checkout via 3-D Secure" },
-  { id: "Bank Transfer", label: "Bank transfer", icon: Building2, hint: "Domestic ACH / SEPA" },
-  { id: "Wire", label: "International wire", icon: Wallet, hint: "SWIFT · 1–2 business days" },
-  { id: "BTC", label: "Bitcoin", icon: Bitcoin, hint: "On-chain BTC" },
-  { id: "USDT (TRC20)", label: "USDT (TRC20)", icon: Bitcoin, hint: "Low-fee stablecoin" },
+const METHODS: { id: PaymentMethod; label: string; icon: React.ComponentType<{ className?: string }>; hint: string; available: boolean }[] = [
+  { id: "Visa", label: "Card (Visa / Mastercard / Amex)", icon: CreditCard, hint: "Secure card checkout via 3-D Secure", available: false },
+  { id: "Bank Transfer", label: "Bank transfer", icon: Building2, hint: "Domestic ACH / SEPA", available: false },
+  { id: "Wire", label: "International wire", icon: Wallet, hint: "SWIFT · 1–2 business days", available: false },
+  { id: "BTC", label: "Bitcoin", icon: Bitcoin, hint: "On-chain BTC", available: true },
+  { id: "USDT (TRC20)", label: "USDT (TRC20)", icon: Bitcoin, hint: "Low-fee stablecoin", available: true },
 ];
 
 function PayPage() {
@@ -212,6 +212,8 @@ function MethodCard({
   onBack: () => void;
   onNext: () => void;
 }) {
+  const selectedMethod = METHODS.find((m) => m.id === selected);
+  const isUnavailable = !!selectedMethod && !selectedMethod.available;
   return (
     <div className="rounded-2xl border border-border bg-card p-6">
       <h2 className="font-display text-2xl font-bold">Choose payment method</h2>
@@ -233,7 +235,14 @@ function MethodCard({
                 <Icon className="h-5 w-5" />
               </div>
               <div className="flex-1">
-                <p className="font-medium">{m.label}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium">{m.label}</p>
+                  {!m.available && (
+                    <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                      Unavailable
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs text-muted-foreground">{m.hint}</p>
               </div>
               <div className={`h-4 w-4 rounded-full border ${active ? "border-primary bg-primary" : "border-border"}`} />
@@ -242,9 +251,21 @@ function MethodCard({
         })}
       </div>
 
+      {isUnavailable && (
+        <div className="mt-4 flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm">
+          <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-destructive" />
+          <div>
+            <p className="font-medium text-destructive">Not available in your region</p>
+            <p className="mt-1 text-muted-foreground">
+              Card and bank payments are temporarily unavailable in your region. Please pay with Bitcoin or USDT to complete this order.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="mt-6 flex justify-between">
         <Button variant="outline" onClick={onBack}><ArrowLeft className="mr-1 h-4 w-4" /> Back</Button>
-        <Button disabled={!selected} onClick={onNext} className="bg-primary text-primary-foreground hover:bg-primary/90">
+        <Button disabled={!selected || isUnavailable} onClick={onNext} className="bg-primary text-primary-foreground hover:bg-primary/90">
           Continue <ArrowRight className="ml-1 h-4 w-4" />
         </Button>
       </div>
@@ -332,6 +353,13 @@ function DetailsCard({
 }
 
 function SuccessCard({ doc }: { doc: PayDoc }) {
+  const receiptUrl = typeof window !== "undefined" ? `${window.location.origin}/receipt/${doc.token}` : `/receipt/${doc.token}`;
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    await navigator.clipboard.writeText(receiptUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
+  };
   return (
     <div className="rounded-2xl border border-border bg-card p-8 text-center">
       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -344,7 +372,26 @@ function SuccessCard({ doc }: { doc: PayDoc }) {
       {doc.paidWith && (
         <p className="mt-1 text-xs text-muted-foreground">Method: {doc.paidWith}</p>
       )}
-      <Button asChild className="mt-6"><Link to="/">Return home</Link></Button>
+
+      <div className="mt-6 space-y-2 text-left">
+        <Label className="text-xs uppercase tracking-widest text-muted-foreground">Receipt link</Label>
+        <div className="flex items-stretch gap-2">
+          <Input readOnly value={receiptUrl} className="font-mono text-xs" />
+          <Button type="button" onClick={copy} variant="outline">
+            <Copy className="h-4 w-4" />
+            <span className="ml-1 text-xs">{copied ? "Copied" : "Copy"}</span>
+          </Button>
+        </div>
+      </div>
+
+      <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
+        <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
+          <Link to="/receipt/$token" params={{ token: doc.token }}>
+            <FileText className="mr-2 h-4 w-4" /> View receipt
+          </Link>
+        </Button>
+        <Button asChild variant="outline"><Link to="/">Return home</Link></Button>
+      </div>
     </div>
   );
 }
