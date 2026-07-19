@@ -4,7 +4,7 @@ import { AlertTriangle, ArrowLeft, ArrowRight, Bitcoin, Building2, CheckCircle2,
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getDoc, markPaid, docTotal, payLink, type PayDoc } from "@/lib/payment-store";
+import { getDoc, markPaid, docTotal, type PayDoc } from "@/lib/payment-store";
 import { fmt, type PaymentMethod } from "@/lib/mock-data";
 import { StatusBadge } from "@/components/status-badge";
 
