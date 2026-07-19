@@ -212,6 +212,8 @@ function MethodCard({
   onBack: () => void;
   onNext: () => void;
 }) {
+  const selectedMethod = METHODS.find((m) => m.id === selected);
+  const isUnavailable = !!selectedMethod && !selectedMethod.available;
   return (
     <div className="rounded-2xl border border-border bg-card p-6">
       <h2 className="font-display text-2xl font-bold">Choose payment method</h2>
@@ -233,7 +235,14 @@ function MethodCard({
                 <Icon className="h-5 w-5" />
               </div>
               <div className="flex-1">
-                <p className="font-medium">{m.label}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium">{m.label}</p>
+                  {!m.available && (
+                    <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                      Unavailable
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs text-muted-foreground">{m.hint}</p>
               </div>
               <div className={`h-4 w-4 rounded-full border ${active ? "border-primary bg-primary" : "border-border"}`} />
@@ -242,9 +251,21 @@ function MethodCard({
         })}
       </div>
 
+      {isUnavailable && (
+        <div className="mt-4 flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm">
+          <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-destructive" />
+          <div>
+            <p className="font-medium text-destructive">Not available in your region</p>
+            <p className="mt-1 text-muted-foreground">
+              Card and bank payments are temporarily unavailable in your region. Please pay with Bitcoin or USDT to complete this {`{`}order{`}`}.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="mt-6 flex justify-between">
         <Button variant="outline" onClick={onBack}><ArrowLeft className="mr-1 h-4 w-4" /> Back</Button>
-        <Button disabled={!selected} onClick={onNext} className="bg-primary text-primary-foreground hover:bg-primary/90">
+        <Button disabled={!selected || isUnavailable} onClick={onNext} className="bg-primary text-primary-foreground hover:bg-primary/90">
           Continue <ArrowRight className="ml-1 h-4 w-4" />
         </Button>
       </div>
