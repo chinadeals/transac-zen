@@ -257,7 +257,7 @@ function MethodCard({
           <div>
             <p className="font-medium text-destructive">Not available in your region</p>
             <p className="mt-1 text-muted-foreground">
-              Card and bank payments are temporarily unavailable in your region. Please pay with Bitcoin or USDT to complete this {`{`}order{`}`}.
+              Card and bank payments are temporarily unavailable in your region. Please pay with Bitcoin or USDT to complete this order.
             </p>
           </div>
         </div>
