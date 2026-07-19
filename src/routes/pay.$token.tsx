@@ -21,12 +21,12 @@ export const Route = createFileRoute("/pay/$token")({
 
 type Step = "review" | "method" | "details" | "done";
 
-const METHODS: { id: PaymentMethod; label: string; icon: React.ComponentType<{ className?: string }>; hint: string }[] = [
-  { id: "Visa", label: "Card (Visa / Mastercard / Amex)", icon: CreditCard, hint: "Secure card checkout via 3-D Secure" },
-  { id: "Bank Transfer", label: "Bank transfer", icon: Building2, hint: "Domestic ACH / SEPA" },
-  { id: "Wire", label: "International wire", icon: Wallet, hint: "SWIFT · 1–2 business days" },
-  { id: "BTC", label: "Bitcoin", icon: Bitcoin, hint: "On-chain BTC" },
-  { id: "USDT (TRC20)", label: "USDT (TRC20)", icon: Bitcoin, hint: "Low-fee stablecoin" },
+const METHODS: { id: PaymentMethod; label: string; icon: React.ComponentType<{ className?: string }>; hint: string; available: boolean }[] = [
+  { id: "Visa", label: "Card (Visa / Mastercard / Amex)", icon: CreditCard, hint: "Secure card checkout via 3-D Secure", available: false },
+  { id: "Bank Transfer", label: "Bank transfer", icon: Building2, hint: "Domestic ACH / SEPA", available: false },
+  { id: "Wire", label: "International wire", icon: Wallet, hint: "SWIFT · 1–2 business days", available: false },
+  { id: "BTC", label: "Bitcoin", icon: Bitcoin, hint: "On-chain BTC", available: true },
+  { id: "USDT (TRC20)", label: "USDT (TRC20)", icon: Bitcoin, hint: "Low-fee stablecoin", available: true },
 ];
 
 function PayPage() {
