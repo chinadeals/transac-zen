@@ -1,9 +1,34 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, ArrowLeft, ArrowRight, Bitcoin, Building2, CheckCircle2, Copy, CreditCard, FileText, Lock, ShieldCheck, Wallet } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  ArrowRight,
+  Bitcoin,
+  Building2,
+  Check,
+  CheckCircle2,
+  Copy,
+  CreditCard,
+  FileText,
+  Globe2,
+  Loader2,
+  Lock,
+  ShieldCheck,
+  Timer,
+  Wallet,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { getDoc, markPaid, docTotal, type PayDoc } from "@/lib/payment-store";
 import { fmt, type PaymentMethod } from "@/lib/mock-data";
 import { StatusBadge } from "@/components/status-badge";
@@ -21,13 +46,33 @@ export const Route = createFileRoute("/pay/$token")({
 
 type Step = "review" | "method" | "details" | "done";
 
-const METHODS: { id: PaymentMethod; label: string; icon: React.ComponentType<{ className?: string }>; hint: string; available: boolean }[] = [
-  { id: "Visa", label: "Card (Visa / Mastercard / Amex)", icon: CreditCard, hint: "Secure card checkout via 3-D Secure", available: false },
-  { id: "Bank Transfer", label: "Bank transfer", icon: Building2, hint: "Domestic ACH / SEPA", available: false },
-  { id: "Wire", label: "International wire", icon: Wallet, hint: "SWIFT · 1–2 business days", available: false },
-  { id: "BTC", label: "Bitcoin", icon: Bitcoin, hint: "On-chain BTC", available: true },
-  { id: "USDT (TRC20)", label: "USDT (TRC20)", icon: Bitcoin, hint: "Low-fee stablecoin", available: true },
+type MethodDef = {
+  id: PaymentMethod;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  hint: string;
+  badge?: string;
+  crypto?: boolean;
+};
+
+const METHODS: MethodDef[] = [
+  { id: "Visa", label: "Card — Visa / Mastercard / Amex", icon: CreditCard, hint: "3-D Secure · Instant" },
+  { id: "Bank Transfer", label: "Bank transfer", icon: Building2, hint: "ACH / SEPA · 1 business day" },
+  { id: "Wire", label: "International wire", icon: Wallet, hint: "SWIFT · 1–2 business days" },
+  { id: "BTC", label: "Bitcoin", icon: Bitcoin, hint: "On-chain BTC · ~10 min", badge: "Recommended", crypto: true },
+  { id: "USDT (TRC20)", label: "USDT (TRC20)", icon: Bitcoin, hint: "Low fee stablecoin · ~1 min", badge: "Fastest", crypto: true },
 ];
+
+// Mock live rates for USD→crypto
+const RATES: Record<string, number> = {
+  BTC: 1 / 68_000,
+  "USDT (TRC20)": 1,
+};
+
+const CRYPTO_ADDRESSES: Record<string, string> = {
+  BTC: "bc1qs7f9jw8pza0hkkq3xp6zh4qk3l8u3d7v9n2m5x",
+  "USDT (TRC20)": "TXYZa9k3JqLp2WwK4vQ8bR7nMxHtGf6dCe",
+};
 
 function PayPage() {
   const { token } = Route.useParams();
@@ -36,10 +81,20 @@ function PayPage() {
   const [step, setStep] = useState<Step>("review");
   const [method, setMethod] = useState<PaymentMethod | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [regionBlocked, setRegionBlocked] = useState(false);
+  const [region, setRegion] = useState<string>("your region");
 
   useEffect(() => {
     setDoc(getDoc(token));
     setLoaded(true);
+    // best-effort geo detection; fallback silently
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+      const guess = tz.split("/")[1]?.replace(/_/g, " ");
+      if (guess) setRegion(guess);
+    } catch {
+      // ignore
+    }
   }, [token]);
 
   const total = useMemo(() => (doc ? docTotal(doc) : 0), [doc]);
@@ -60,15 +115,29 @@ function PayPage() {
   }
 
   const isPaid = doc.status === "Paid" || doc.status === "Approved" || step === "done";
+  const selectedMethod = METHODS.find((m) => m.id === method);
+  const isCrypto = !!selectedMethod?.crypto;
 
   const confirmPay = async () => {
     if (!method) return;
     setProcessing(true);
-    await new Promise((r) => setTimeout(r, 1200));
+    // simulate network + auth
+    await new Promise((r) => setTimeout(r, 1600));
+    if (!isCrypto) {
+      setProcessing(false);
+      setRegionBlocked(true);
+      return;
+    }
     markPaid(doc.token, method);
     setDoc(getDoc(doc.token));
     setProcessing(false);
     setStep("done");
+  };
+
+  const switchToCrypto = (m: PaymentMethod) => {
+    setMethod(m);
+    setRegionBlocked(false);
+    setStep("details");
   };
 
   return (
@@ -79,8 +148,13 @@ function PayPage() {
             <div className="h-7 w-7 rounded-lg bg-primary" />
             <span className="font-display font-bold">PayFlow Gateway</span>
           </Link>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Lock className="h-3 w-3" /> Secure checkout
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="hidden items-center gap-1 sm:flex">
+              <Globe2 className="h-3 w-3" /> {region}
+            </span>
+            <span className="flex items-center gap-1">
+              <Lock className="h-3 w-3" /> Secure checkout
+            </span>
           </div>
         </div>
       </header>
@@ -104,6 +178,8 @@ function PayPage() {
             ) : (
               <DetailsCard
                 method={method!}
+                doc={doc}
+                total={total}
                 onBack={() => setStep("method")}
                 onPay={confirmPay}
                 processing={processing}
@@ -117,6 +193,14 @@ function PayPage() {
           </aside>
         </div>
       </main>
+
+      <RegionBlockedDialog
+        open={regionBlocked}
+        region={region}
+        method={method}
+        onClose={() => setRegionBlocked(false)}
+        onSwitch={switchToCrypto}
+      />
     </div>
   );
 }
@@ -137,7 +221,7 @@ function Stepper({ current, kind }: { current: Step; kind: PayDoc["kind"] }) {
         return (
           <li key={s.id} className="flex items-center gap-2">
             <span
-              className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${
+              className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold transition ${
                 done ? "bg-primary text-primary-foreground" : active ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground"
               }`}
             >
@@ -154,7 +238,7 @@ function Stepper({ current, kind }: { current: Step; kind: PayDoc["kind"] }) {
 
 function ReviewCard({ doc, onNext }: { doc: PayDoc; onNext: () => void }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-6">
+    <div className="rounded-2xl border border-border bg-card p-6 animate-fade-in">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-xs uppercase tracking-widest text-muted-foreground">
@@ -168,7 +252,7 @@ function ReviewCard({ doc, onNext }: { doc: PayDoc; onNext: () => void }) {
 
       <div className="mt-6 space-y-3">
         {doc.items.map((it) => (
-          <div key={it.id} className="flex gap-4 rounded-xl border border-border bg-secondary/30 p-3">
+          <div key={it.id} className="flex gap-4 rounded-xl border border-border bg-secondary/30 p-3 transition hover:border-primary/40">
             <img src={it.image} alt={it.name} className="h-24 w-24 flex-shrink-0 rounded-lg object-cover" />
             <div className="flex-1">
               <div className="flex items-start justify-between gap-3">
@@ -212,10 +296,8 @@ function MethodCard({
   onBack: () => void;
   onNext: () => void;
 }) {
-  const selectedMethod = METHODS.find((m) => m.id === selected);
-  const isUnavailable = !!selectedMethod && !selectedMethod.available;
   return (
-    <div className="rounded-2xl border border-border bg-card p-6">
+    <div className="rounded-2xl border border-border bg-card p-6 animate-fade-in">
       <h2 className="font-display text-2xl font-bold">Choose payment method</h2>
       <p className="mt-1 text-sm text-muted-foreground">All methods are processed through PayFlow's secure gateway.</p>
 
@@ -228,7 +310,7 @@ function MethodCard({
               key={m.id}
               onClick={() => onSelect(m.id)}
               className={`flex w-full items-center gap-3 rounded-xl border p-4 text-left transition ${
-                active ? "border-primary bg-primary/5" : "border-border hover:bg-secondary/40"
+                active ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:bg-secondary/40"
               }`}
             >
               <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${active ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"}`}>
@@ -237,9 +319,9 @@ function MethodCard({
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <p className="font-medium">{m.label}</p>
-                  {!m.available && (
-                    <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                      Unavailable
+                  {m.badge && (
+                    <span className="rounded-full bg-accent/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-accent-foreground">
+                      {m.badge}
                     </span>
                   )}
                 </div>
@@ -251,21 +333,9 @@ function MethodCard({
         })}
       </div>
 
-      {isUnavailable && (
-        <div className="mt-4 flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm">
-          <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-destructive" />
-          <div>
-            <p className="font-medium text-destructive">Not available in your region</p>
-            <p className="mt-1 text-muted-foreground">
-              Card and bank payments are temporarily unavailable in your region. Please pay with Bitcoin or USDT to complete this order.
-            </p>
-          </div>
-        </div>
-      )}
-
       <div className="mt-6 flex justify-between">
         <Button variant="outline" onClick={onBack}><ArrowLeft className="mr-1 h-4 w-4" /> Back</Button>
-        <Button disabled={!selected || isUnavailable} onClick={onNext} className="bg-primary text-primary-foreground hover:bg-primary/90">
+        <Button disabled={!selected} onClick={onNext} className="bg-primary text-primary-foreground hover:bg-primary/90">
           Continue <ArrowRight className="ml-1 h-4 w-4" />
         </Button>
       </div>
@@ -275,80 +345,227 @@ function MethodCard({
 
 function DetailsCard({
   method,
+  doc,
+  total,
   onBack,
   onPay,
   processing,
   amountLabel,
 }: {
   method: PaymentMethod;
+  doc: PayDoc;
+  total: number;
   onBack: () => void;
   onPay: () => void;
   processing: boolean;
   amountLabel: string;
 }) {
   const isCard = ["Visa", "Mastercard", "Amex"].includes(method);
-  const isCrypto = ["BTC", "ETH", "USDT (TRC20)", "USDT (ERC20)"].includes(method);
+  const isCrypto = ["BTC", "USDT (TRC20)"].includes(method);
   const isBank = ["Bank Transfer", "Wire"].includes(method);
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6">
+    <div className="rounded-2xl border border-border bg-card p-6 animate-fade-in">
       <h2 className="font-display text-2xl font-bold">Payment details</h2>
       <p className="mt-1 text-sm text-muted-foreground">Paying with {method}</p>
 
       <div className="mt-5 space-y-4">
-        {isCard && (
-          <>
-            <div>
-              <Label>Cardholder name</Label>
-              <Input placeholder="Name on card" />
-            </div>
-            <div>
-              <Label>Card number</Label>
-              <Input placeholder="4242 4242 4242 4242" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>Expiry</Label>
-                <Input placeholder="MM / YY" />
-              </div>
-              <div>
-                <Label>CVC</Label>
-                <Input placeholder="123" />
-              </div>
-            </div>
-          </>
-        )}
-        {isBank && (
-          <div className="rounded-xl bg-secondary/40 p-4 text-sm">
-            <p className="font-medium">Transfer to:</p>
-            <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-muted-foreground">
-              <dt>Bank</dt><dd className="text-foreground">PayFlow Trust NA</dd>
-              <dt>Account</dt><dd className="font-mono text-foreground">0021 4488 9910</dd>
-              <dt>Routing</dt><dd className="font-mono text-foreground">026 073 150</dd>
-              <dt>Reference</dt><dd className="font-mono text-foreground">Use invoice number</dd>
-            </dl>
-          </div>
-        )}
-        {isCrypto && (
-          <div className="rounded-xl bg-secondary/40 p-4 text-sm">
-            <p className="font-medium">Send exact amount to:</p>
-            <p className="mt-2 break-all rounded-lg bg-background px-3 py-2 font-mono text-xs">
-              TXYZa9k3JqLp2WwK4vQ8bR7nMxHtGf6dCe
-            </p>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Payment auto-confirms after 1 network confirmation.
-            </p>
-          </div>
-        )}
+        {isCard && <CardForm />}
+        {isBank && <BankInstructions doc={doc} />}
+        {isCrypto && <CryptoInstructions method={method} amountUsd={total} />}
       </div>
 
       <div className="mt-6 flex justify-between">
         <Button variant="outline" onClick={onBack} disabled={processing}><ArrowLeft className="mr-1 h-4 w-4" /> Back</Button>
-        <Button onClick={onPay} disabled={processing} className="bg-primary text-primary-foreground hover:bg-primary/90">
-          {processing ? "Processing…" : `Pay ${amountLabel}`}
+        <Button onClick={onPay} disabled={processing} className="bg-primary text-primary-foreground hover:bg-primary/90 min-w-[160px]">
+          {processing ? (
+            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing…</>
+          ) : (
+            <>{isCrypto ? "I've sent the payment" : `Pay ${amountLabel}`}</>
+          )}
         </Button>
       </div>
     </div>
+  );
+}
+
+function CardForm() {
+  const [num, setNum] = useState("");
+  const formatted = num.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
+  return (
+    <>
+      <div>
+        <Label>Cardholder name</Label>
+        <Input placeholder="Name on card" />
+      </div>
+      <div>
+        <Label>Card number</Label>
+        <Input placeholder="4242 4242 4242 4242" value={formatted} onChange={(e) => setNum(e.target.value)} inputMode="numeric" />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label>Expiry</Label>
+          <Input placeholder="MM / YY" inputMode="numeric" />
+        </div>
+        <div>
+          <Label>CVC</Label>
+          <Input placeholder="123" inputMode="numeric" maxLength={4} />
+        </div>
+      </div>
+      <p className="flex items-center gap-1 text-xs text-muted-foreground">
+        <Lock className="h-3 w-3" /> Encrypted with TLS 1.3 · Never stored
+      </p>
+    </>
+  );
+}
+
+function BankInstructions({ doc }: { doc: PayDoc }) {
+  return (
+    <div className="rounded-xl bg-secondary/40 p-4 text-sm">
+      <p className="font-medium">Transfer to:</p>
+      <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-muted-foreground">
+        <dt>Bank</dt><dd className="text-foreground">PayFlow Trust NA</dd>
+        <dt>Account</dt><dd className="font-mono text-foreground">0021 4488 9910</dd>
+        <dt>Routing</dt><dd className="font-mono text-foreground">026 073 150</dd>
+        <dt>Reference</dt><dd className="font-mono text-foreground">{doc.number}</dd>
+      </dl>
+    </div>
+  );
+}
+
+function CryptoInstructions({ method, amountUsd }: { method: PaymentMethod; amountUsd: number }) {
+  const rate = RATES[method] ?? 1;
+  const cryptoAmount = amountUsd * rate;
+  const address = CRYPTO_ADDRESSES[method] ?? "";
+  const symbol = method === "BTC" ? "BTC" : "USDT";
+  const displayAmount = symbol === "BTC" ? cryptoAmount.toFixed(8) : cryptoAmount.toFixed(2);
+  const qr = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=8&data=${encodeURIComponent(address)}`;
+
+  const [copied, setCopied] = useState<"addr" | "amt" | null>(null);
+  const copy = async (val: string, key: "addr" | "amt") => {
+    await navigator.clipboard.writeText(val);
+    setCopied(key);
+    setTimeout(() => setCopied(null), 1500);
+  };
+
+  return (
+    <div className="space-y-3">
+      <Countdown minutes={15} />
+      <div className="grid gap-4 rounded-xl border border-border bg-secondary/30 p-4 sm:grid-cols-[180px_1fr]">
+        <div className="flex items-start justify-center">
+          <img src={qr} alt="Payment QR" className="h-[180px] w-[180px] rounded-lg bg-white p-2" />
+        </div>
+        <div className="space-y-3 text-sm">
+          <div>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">Send exactly</p>
+            <div className="mt-1 flex items-center gap-2">
+              <p className="font-display text-xl font-bold">{displayAmount} {symbol}</p>
+              <Button variant="ghost" size="sm" onClick={() => copy(displayAmount, "amt")}>
+                {copied === "amt" ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3" />}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">≈ {fmt(amountUsd, "USD")} · Rate locked for 15 min</p>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">To address</p>
+            <div className="mt-1 flex items-center gap-2 rounded-lg bg-background px-3 py-2">
+              <span className="flex-1 break-all font-mono text-xs">{address}</span>
+              <Button variant="ghost" size="sm" onClick={() => copy(address, "addr")}>
+                {copied === "addr" ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3" />}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Payment auto-confirms after {method === "BTC" ? "1 network confirmation (~10 min)" : "1 TRC20 confirmation (~1 min)"}.
+      </p>
+    </div>
+  );
+}
+
+function Countdown({ minutes }: { minutes: number }) {
+  const [left, setLeft] = useState(minutes * 60);
+  const target = useRef(Date.now() + minutes * 60_000);
+  useEffect(() => {
+    const t = setInterval(() => {
+      const s = Math.max(0, Math.round((target.current - Date.now()) / 1000));
+      setLeft(s);
+    }, 1000);
+    return () => clearInterval(t);
+  }, []);
+  const mm = String(Math.floor(left / 60)).padStart(2, "0");
+  const ss = String(left % 60).padStart(2, "0");
+  const low = left < 120;
+  return (
+    <div className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs ${low ? "border-destructive/40 bg-destructive/10 text-destructive" : "border-border bg-secondary/40 text-muted-foreground"}`}>
+      <Timer className="h-3 w-3" />
+      <span>Rate locked · expires in <span className="font-mono font-semibold">{mm}:{ss}</span></span>
+    </div>
+  );
+}
+
+function RegionBlockedDialog({
+  open,
+  region,
+  method,
+  onClose,
+  onSwitch,
+}: {
+  open: boolean;
+  region: string;
+  method: PaymentMethod | null;
+  onClose: () => void;
+  onSwitch: (m: PaymentMethod) => void;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+            <AlertTriangle className="h-6 w-6" />
+          </div>
+          <DialogTitle className="text-center">Not available in {region}</DialogTitle>
+          <DialogDescription className="text-center">
+            {method ? `${method} payments` : "This payment method"} could not be authorized for your region right now.
+            You can complete this order instantly with crypto — no account needed.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="mt-2 space-y-2">
+          <button
+            onClick={() => onSwitch("BTC")}
+            className="flex w-full items-center gap-3 rounded-xl border border-border p-3 text-left transition hover:border-primary hover:bg-primary/5"
+          >
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Bitcoin className="h-4 w-4" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold">Pay with Bitcoin</p>
+              <p className="text-xs text-muted-foreground">On-chain BTC · ~10 min</p>
+            </div>
+            <ArrowRight className="h-4 w-4 text-muted-foreground" />
+          </button>
+          <button
+            onClick={() => onSwitch("USDT (TRC20)")}
+            className="flex w-full items-center gap-3 rounded-xl border border-border p-3 text-left transition hover:border-primary hover:bg-primary/5"
+          >
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Bitcoin className="h-4 w-4" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold">Pay with USDT (TRC20)</p>
+              <p className="text-xs text-muted-foreground">Stablecoin · ~1 min · lowest fees</p>
+            </div>
+            <ArrowRight className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </div>
+
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose} className="w-full">Cancel</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -361,7 +578,7 @@ function SuccessCard({ doc }: { doc: PayDoc }) {
     setTimeout(() => setCopied(false), 1800);
   };
   return (
-    <div className="rounded-2xl border border-border bg-card p-8 text-center">
+    <div className="rounded-2xl border border-border bg-card p-8 text-center animate-scale-in">
       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
         <CheckCircle2 className="h-9 w-9" />
       </div>
@@ -378,7 +595,7 @@ function SuccessCard({ doc }: { doc: PayDoc }) {
         <div className="flex items-stretch gap-2">
           <Input readOnly value={receiptUrl} className="font-mono text-xs" />
           <Button type="button" onClick={copy} variant="outline">
-            <Copy className="h-4 w-4" />
+            {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
             <span className="ml-1 text-xs">{copied ? "Copied" : "Copy"}</span>
           </Button>
         </div>
