@@ -15,6 +15,7 @@ import {
   Loader2,
   Lock,
   ShieldCheck,
+  Smartphone,
   Timer,
   Wallet,
 } from "lucide-react";
@@ -53,9 +54,16 @@ type MethodDef = {
   hint: string;
   badge?: string;
   crypto?: boolean;
+  momo?: boolean;
+  /** ISO country codes where this rail is native/priority. */
+  countries?: string[];
 };
 
 const METHODS: MethodDef[] = [
+  { id: "M-Pesa", label: "M-Pesa (Safaricom)", icon: Smartphone, hint: "STK push · Instant", badge: "Popular", momo: true, countries: ["KE", "TZ"] },
+  { id: "MTN MoMo", label: "MTN Mobile Money", icon: Smartphone, hint: "Instant · UG · GH · RW · CI · CM", momo: true, countries: ["UG", "GH", "RW", "CI", "CM", "ZM"] },
+  { id: "Airtel Money", label: "Airtel Money", icon: Smartphone, hint: "Instant · KE · UG · TZ · ZM · NG", momo: true, countries: ["KE", "UG", "TZ", "ZM", "NG", "RW"] },
+  { id: "Orange Money", label: "Orange Money", icon: Smartphone, hint: "Instant · SN · CI · CM · ML", momo: true, countries: ["SN", "CI", "CM", "ML", "BF"] },
   { id: "Visa", label: "Card — Visa / Mastercard / Amex", icon: CreditCard, hint: "3-D Secure · Instant" },
   { id: "Bank Transfer", label: "Bank transfer", icon: Building2, hint: "ACH / SEPA · 1 business day" },
   { id: "Wire", label: "International wire", icon: Wallet, hint: "SWIFT · 1–2 business days" },
@@ -73,6 +81,19 @@ const CRYPTO_ADDRESSES: Record<string, string> = {
   BTC: "bc1qs7f9jw8pza0hkkq3xp6zh4qk3l8u3d7v9n2m5x",
   "USDT (TRC20)": "TXYZa9k3JqLp2WwK4vQ8bR7nMxHtGf6dCe",
 };
+
+// Country → default currency for mobile money display
+const COUNTRY_CURRENCY: Record<string, string> = {
+  KE: "KES", UG: "UGX", TZ: "TZS", RW: "RWF", GH: "GHS", NG: "NGN",
+  ZM: "ZMW", SN: "XOF", CI: "XOF", CM: "XAF", ML: "XOF", BF: "XOF",
+};
+
+// Country prefix hints
+const COUNTRY_PREFIX: Record<string, string> = {
+  KE: "+254", UG: "+256", TZ: "+255", RW: "+250", GH: "+233", NG: "+234",
+  ZM: "+260", SN: "+221", CI: "+225", CM: "+237", ML: "+223", BF: "+226",
+};
+
 
 function PayPage() {
   const { token } = Route.useParams();
@@ -117,13 +138,14 @@ function PayPage() {
   const isPaid = doc.status === "Paid" || doc.status === "Approved" || step === "done";
   const selectedMethod = METHODS.find((m) => m.id === method);
   const isCrypto = !!selectedMethod?.crypto;
+  const isMomo = !!selectedMethod?.momo;
 
   const confirmPay = async () => {
     if (!method) return;
     setProcessing(true);
     // simulate network + auth
     await new Promise((r) => setTimeout(r, 1600));
-    if (!isCrypto) {
+    if (!isCrypto && !isMomo) {
       setProcessing(false);
       setRegionBlocked(true);
       return;
@@ -134,7 +156,7 @@ function PayPage() {
     setStep("done");
   };
 
-  const switchToCrypto = (m: PaymentMethod) => {
+  const switchToAlt = (m: PaymentMethod) => {
     setMethod(m);
     setRegionBlocked(false);
     setStep("details");
@@ -199,7 +221,7 @@ function PayPage() {
         region={region}
         method={method}
         onClose={() => setRegionBlocked(false)}
-        onSwitch={switchToCrypto}
+        onSwitch={switchToAlt}
       />
     </div>
   );
@@ -363,6 +385,8 @@ function DetailsCard({
   const isCard = ["Visa", "Mastercard", "Amex"].includes(method);
   const isCrypto = ["BTC", "USDT (TRC20)"].includes(method);
   const isBank = ["Bank Transfer", "Wire"].includes(method);
+  const momoDef = METHODS.find((m) => m.id === method && m.momo);
+  const isMomo = !!momoDef;
 
   return (
     <div className="rounded-2xl border border-border bg-card p-6 animate-fade-in">
@@ -373,6 +397,7 @@ function DetailsCard({
         {isCard && <CardForm />}
         {isBank && <BankInstructions doc={doc} />}
         {isCrypto && <CryptoInstructions method={method} amountUsd={total} />}
+        {isMomo && <MobileMoneyForm method={method} amountLabel={amountLabel} country={momoDef?.countries?.[0]} />}
       </div>
 
       <div className="mt-6 flex justify-between">
@@ -381,10 +406,45 @@ function DetailsCard({
           {processing ? (
             <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing…</>
           ) : (
-            <>{isCrypto ? "I've sent the payment" : `Pay ${amountLabel}`}</>
+            <>{isCrypto ? "I've sent the payment" : isMomo ? `Send push · ${amountLabel}` : `Pay ${amountLabel}`}</>
           )}
         </Button>
       </div>
+    </div>
+  );
+}
+
+function MobileMoneyForm({ method, amountLabel, country }: { method: PaymentMethod; amountLabel: string; country?: string }) {
+  const prefix = country ? COUNTRY_PREFIX[country] ?? "" : "";
+  const currency = country ? COUNTRY_CURRENCY[country] : undefined;
+  const [phone, setPhone] = useState(prefix);
+  return (
+    <div className="space-y-3">
+      <div className="rounded-xl bg-secondary/40 p-4 text-sm">
+        <div className="flex items-center gap-2 font-medium"><Smartphone className="h-4 w-4 text-primary" /> {method}</div>
+        <p className="mt-1 text-muted-foreground">
+          Enter the mobile-money number to receive the STK push. Confirm on your phone with your PIN.
+          {currency ? <> Amount is displayed in {currency}.</> : null}
+        </p>
+      </div>
+      <div>
+        <Label>Mobile money number</Label>
+        <Input className="mt-1.5" inputMode="tel" placeholder={`${prefix} 7XX XXX XXX`}
+          value={phone} onChange={(e) => setPhone(e.target.value)} />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label>Amount</Label>
+          <Input readOnly value={amountLabel} className="mt-1.5 font-medium" />
+        </div>
+        <div>
+          <Label>Reference</Label>
+          <Input readOnly value="PayFlow" className="mt-1.5 font-mono text-xs" />
+        </div>
+      </div>
+      <p className="flex items-center gap-1 text-xs text-muted-foreground">
+        <Lock className="h-3 w-3" /> Push encrypted end-to-end · PIN never leaves your device
+      </p>
     </div>
   );
 }
@@ -528,38 +588,31 @@ function RegionBlockedDialog({
           <DialogTitle className="text-center">Not available in {region}</DialogTitle>
           <DialogDescription className="text-center">
             {method ? `${method} payments` : "This payment method"} could not be authorized for your region right now.
-            You can complete this order instantly with crypto — no account needed.
+            Complete this order instantly with mobile money or crypto — no account needed.
           </DialogDescription>
         </DialogHeader>
 
         <div className="mt-2 space-y-2">
-          <button
-            onClick={() => onSwitch("BTC")}
-            className="flex w-full items-center gap-3 rounded-xl border border-border p-3 text-left transition hover:border-primary hover:bg-primary/5"
-          >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <Bitcoin className="h-4 w-4" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold">Pay with Bitcoin</p>
-              <p className="text-xs text-muted-foreground">On-chain BTC · ~10 min</p>
-            </div>
+          <button onClick={() => onSwitch("M-Pesa")}
+            className="flex w-full items-center gap-3 rounded-xl border border-border p-3 text-left transition hover:border-primary hover:bg-primary/5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary"><Smartphone className="h-4 w-4" /></div>
+            <div className="flex-1"><p className="text-sm font-semibold">Pay with M-Pesa</p><p className="text-xs text-muted-foreground">STK push · Instant</p></div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
           </button>
-          <button
-            onClick={() => onSwitch("USDT (TRC20)")}
-            className="flex w-full items-center gap-3 rounded-xl border border-border p-3 text-left transition hover:border-primary hover:bg-primary/5"
-          >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <Bitcoin className="h-4 w-4" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold">Pay with USDT (TRC20)</p>
-              <p className="text-xs text-muted-foreground">Stablecoin · ~1 min · lowest fees</p>
-            </div>
+          <button onClick={() => onSwitch("MTN MoMo")}
+            className="flex w-full items-center gap-3 rounded-xl border border-border p-3 text-left transition hover:border-primary hover:bg-primary/5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary"><Smartphone className="h-4 w-4" /></div>
+            <div className="flex-1"><p className="text-sm font-semibold">Pay with MTN MoMo</p><p className="text-xs text-muted-foreground">Instant · UG · GH · RW · CI</p></div>
+            <ArrowRight className="h-4 w-4 text-muted-foreground" />
+          </button>
+          <button onClick={() => onSwitch("USDT (TRC20)")}
+            className="flex w-full items-center gap-3 rounded-xl border border-border p-3 text-left transition hover:border-primary hover:bg-primary/5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary"><Bitcoin className="h-4 w-4" /></div>
+            <div className="flex-1"><p className="text-sm font-semibold">Pay with USDT (TRC20)</p><p className="text-xs text-muted-foreground">Stablecoin · ~1 min · lowest fees</p></div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
+
 
         <DialogFooter>
           <Button variant="ghost" onClick={onClose} className="w-full">Cancel</Button>

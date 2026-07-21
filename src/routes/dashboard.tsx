@@ -1,9 +1,11 @@
-import { createFileRoute, Outlet, Link } from "@tanstack/react-router";
+import { createFileRoute, Outlet, Link, useRouterState } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { Bell, Search } from "lucide-react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -16,6 +18,20 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 function DashboardLayout() {
+  const pathname = useRouterState({ select: (r) => r.location.pathname });
+  useEffect(() => {
+    let cancelled = false;
+    const ping = async () => {
+      const { data } = await supabase.auth.getUser();
+      const uid = data.user?.id;
+      if (!uid || cancelled) return;
+      await supabase.from("live_sessions").upsert({ user_id: uid, last_seen: new Date().toISOString(), page: pathname });
+    };
+    ping();
+    const t = setInterval(ping, 30_000);
+    return () => { cancelled = true; clearInterval(t); };
+  }, [pathname]);
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background">
