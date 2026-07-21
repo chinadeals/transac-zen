@@ -221,7 +221,7 @@ function PayPage() {
         region={region}
         method={method}
         onClose={() => setRegionBlocked(false)}
-        onSwitch={switchToCrypto}
+        onSwitch={switchToAlt}
       />
     </div>
   );
