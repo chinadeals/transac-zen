@@ -13,7 +13,11 @@ export type PaymentMethod =
   | "BTC"
   | "ETH"
   | "USDT (TRC20)"
-  | "USDT (ERC20)";
+  | "USDT (ERC20)"
+  | "M-Pesa"
+  | "MTN MoMo"
+  | "Airtel Money"
+  | "Orange Money";
 
 export interface Client {
   id: string;
