@@ -385,6 +385,8 @@ function DetailsCard({
   const isCard = ["Visa", "Mastercard", "Amex"].includes(method);
   const isCrypto = ["BTC", "USDT (TRC20)"].includes(method);
   const isBank = ["Bank Transfer", "Wire"].includes(method);
+  const momoDef = METHODS.find((m) => m.id === method && m.momo);
+  const isMomo = !!momoDef;
 
   return (
     <div className="rounded-2xl border border-border bg-card p-6 animate-fade-in">
@@ -395,6 +397,7 @@ function DetailsCard({
         {isCard && <CardForm />}
         {isBank && <BankInstructions doc={doc} />}
         {isCrypto && <CryptoInstructions method={method} amountUsd={total} />}
+        {isMomo && <MobileMoneyForm method={method} amountLabel={amountLabel} country={momoDef?.countries?.[0]} />}
       </div>
 
       <div className="mt-6 flex justify-between">
@@ -403,10 +406,45 @@ function DetailsCard({
           {processing ? (
             <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing…</>
           ) : (
-            <>{isCrypto ? "I've sent the payment" : `Pay ${amountLabel}`}</>
+            <>{isCrypto ? "I've sent the payment" : isMomo ? `Send push · ${amountLabel}` : `Pay ${amountLabel}`}</>
           )}
         </Button>
       </div>
+    </div>
+  );
+}
+
+function MobileMoneyForm({ method, amountLabel, country }: { method: PaymentMethod; amountLabel: string; country?: string }) {
+  const prefix = country ? COUNTRY_PREFIX[country] ?? "" : "";
+  const currency = country ? COUNTRY_CURRENCY[country] : undefined;
+  const [phone, setPhone] = useState(prefix);
+  return (
+    <div className="space-y-3">
+      <div className="rounded-xl bg-secondary/40 p-4 text-sm">
+        <div className="flex items-center gap-2 font-medium"><Smartphone className="h-4 w-4 text-primary" /> {method}</div>
+        <p className="mt-1 text-muted-foreground">
+          Enter the mobile-money number to receive the STK push. Confirm on your phone with your PIN.
+          {currency ? <> Amount is displayed in {currency}.</> : null}
+        </p>
+      </div>
+      <div>
+        <Label>Mobile money number</Label>
+        <Input className="mt-1.5" inputMode="tel" placeholder={`${prefix} 7XX XXX XXX`}
+          value={phone} onChange={(e) => setPhone(e.target.value)} />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label>Amount</Label>
+          <Input readOnly value={amountLabel} className="mt-1.5 font-medium" />
+        </div>
+        <div>
+          <Label>Reference</Label>
+          <Input readOnly value="PayFlow" className="mt-1.5 font-mono text-xs" />
+        </div>
+      </div>
+      <p className="flex items-center gap-1 text-xs text-muted-foreground">
+        <Lock className="h-3 w-3" /> Push encrypted end-to-end · PIN never leaves your device
+      </p>
     </div>
   );
 }
