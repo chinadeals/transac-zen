@@ -15,6 +15,7 @@ import {
   Loader2,
   Lock,
   ShieldCheck,
+  Smartphone,
   Timer,
   Wallet,
 } from "lucide-react";
@@ -53,9 +54,16 @@ type MethodDef = {
   hint: string;
   badge?: string;
   crypto?: boolean;
+  momo?: boolean;
+  /** ISO country codes where this rail is native/priority. */
+  countries?: string[];
 };
 
 const METHODS: MethodDef[] = [
+  { id: "M-Pesa", label: "M-Pesa (Safaricom)", icon: Smartphone, hint: "STK push · Instant", badge: "Popular", momo: true, countries: ["KE", "TZ"] },
+  { id: "MTN MoMo", label: "MTN Mobile Money", icon: Smartphone, hint: "Instant · UG · GH · RW · CI · CM", momo: true, countries: ["UG", "GH", "RW", "CI", "CM", "ZM"] },
+  { id: "Airtel Money", label: "Airtel Money", icon: Smartphone, hint: "Instant · KE · UG · TZ · ZM · NG", momo: true, countries: ["KE", "UG", "TZ", "ZM", "NG", "RW"] },
+  { id: "Orange Money", label: "Orange Money", icon: Smartphone, hint: "Instant · SN · CI · CM · ML", momo: true, countries: ["SN", "CI", "CM", "ML", "BF"] },
   { id: "Visa", label: "Card — Visa / Mastercard / Amex", icon: CreditCard, hint: "3-D Secure · Instant" },
   { id: "Bank Transfer", label: "Bank transfer", icon: Building2, hint: "ACH / SEPA · 1 business day" },
   { id: "Wire", label: "International wire", icon: Wallet, hint: "SWIFT · 1–2 business days" },
@@ -73,6 +81,19 @@ const CRYPTO_ADDRESSES: Record<string, string> = {
   BTC: "bc1qs7f9jw8pza0hkkq3xp6zh4qk3l8u3d7v9n2m5x",
   "USDT (TRC20)": "TXYZa9k3JqLp2WwK4vQ8bR7nMxHtGf6dCe",
 };
+
+// Country → default currency for mobile money display
+const COUNTRY_CURRENCY: Record<string, string> = {
+  KE: "KES", UG: "UGX", TZ: "TZS", RW: "RWF", GH: "GHS", NG: "NGN",
+  ZM: "ZMW", SN: "XOF", CI: "XOF", CM: "XAF", ML: "XOF", BF: "XOF",
+};
+
+// Country prefix hints
+const COUNTRY_PREFIX: Record<string, string> = {
+  KE: "+254", UG: "+256", TZ: "+255", RW: "+250", GH: "+233", NG: "+234",
+  ZM: "+260", SN: "+221", CI: "+225", CM: "+237", ML: "+223", BF: "+226",
+};
+
 
 function PayPage() {
   const { token } = Route.useParams();
