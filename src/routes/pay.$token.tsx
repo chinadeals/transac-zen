@@ -138,13 +138,14 @@ function PayPage() {
   const isPaid = doc.status === "Paid" || doc.status === "Approved" || step === "done";
   const selectedMethod = METHODS.find((m) => m.id === method);
   const isCrypto = !!selectedMethod?.crypto;
+  const isMomo = !!selectedMethod?.momo;
 
   const confirmPay = async () => {
     if (!method) return;
     setProcessing(true);
     // simulate network + auth
     await new Promise((r) => setTimeout(r, 1600));
-    if (!isCrypto) {
+    if (!isCrypto && !isMomo) {
       setProcessing(false);
       setRegionBlocked(true);
       return;
@@ -155,7 +156,7 @@ function PayPage() {
     setStep("done");
   };
 
-  const switchToCrypto = (m: PaymentMethod) => {
+  const switchToAlt = (m: PaymentMethod) => {
     setMethod(m);
     setRegionBlocked(false);
     setStep("details");
