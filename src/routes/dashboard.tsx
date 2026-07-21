@@ -31,6 +31,8 @@ function DashboardLayout() {
     const t = setInterval(ping, 30_000);
     return () => { cancelled = true; clearInterval(t); };
   }, [pathname]);
+
+  return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
