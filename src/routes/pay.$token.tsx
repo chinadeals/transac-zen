@@ -588,38 +588,31 @@ function RegionBlockedDialog({
           <DialogTitle className="text-center">Not available in {region}</DialogTitle>
           <DialogDescription className="text-center">
             {method ? `${method} payments` : "This payment method"} could not be authorized for your region right now.
-            You can complete this order instantly with crypto — no account needed.
+            Complete this order instantly with mobile money or crypto — no account needed.
           </DialogDescription>
         </DialogHeader>
 
         <div className="mt-2 space-y-2">
-          <button
-            onClick={() => onSwitch("BTC")}
-            className="flex w-full items-center gap-3 rounded-xl border border-border p-3 text-left transition hover:border-primary hover:bg-primary/5"
-          >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <Bitcoin className="h-4 w-4" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold">Pay with Bitcoin</p>
-              <p className="text-xs text-muted-foreground">On-chain BTC · ~10 min</p>
-            </div>
+          <button onClick={() => onSwitch("M-Pesa")}
+            className="flex w-full items-center gap-3 rounded-xl border border-border p-3 text-left transition hover:border-primary hover:bg-primary/5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary"><Smartphone className="h-4 w-4" /></div>
+            <div className="flex-1"><p className="text-sm font-semibold">Pay with M-Pesa</p><p className="text-xs text-muted-foreground">STK push · Instant</p></div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
           </button>
-          <button
-            onClick={() => onSwitch("USDT (TRC20)")}
-            className="flex w-full items-center gap-3 rounded-xl border border-border p-3 text-left transition hover:border-primary hover:bg-primary/5"
-          >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <Bitcoin className="h-4 w-4" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold">Pay with USDT (TRC20)</p>
-              <p className="text-xs text-muted-foreground">Stablecoin · ~1 min · lowest fees</p>
-            </div>
+          <button onClick={() => onSwitch("MTN MoMo")}
+            className="flex w-full items-center gap-3 rounded-xl border border-border p-3 text-left transition hover:border-primary hover:bg-primary/5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary"><Smartphone className="h-4 w-4" /></div>
+            <div className="flex-1"><p className="text-sm font-semibold">Pay with MTN MoMo</p><p className="text-xs text-muted-foreground">Instant · UG · GH · RW · CI</p></div>
+            <ArrowRight className="h-4 w-4 text-muted-foreground" />
+          </button>
+          <button onClick={() => onSwitch("USDT (TRC20)")}
+            className="flex w-full items-center gap-3 rounded-xl border border-border p-3 text-left transition hover:border-primary hover:bg-primary/5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary"><Bitcoin className="h-4 w-4" /></div>
+            <div className="flex-1"><p className="text-sm font-semibold">Pay with USDT (TRC20)</p><p className="text-xs text-muted-foreground">Stablecoin · ~1 min · lowest fees</p></div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
+
 
         <DialogFooter>
           <Button variant="ghost" onClick={onClose} className="w-full">Cancel</Button>
