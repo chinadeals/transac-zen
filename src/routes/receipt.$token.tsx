@@ -4,7 +4,7 @@ import { CheckCircle2, Copy, Download, Printer, ShieldCheck } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getDoc, docTotal, type PayDoc } from "@/lib/payment-store";
+import { getPublicDoc, docTotal, type PayDoc } from "@/lib/payment-store";
 import { fmt } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/receipt/$token")({
@@ -25,8 +25,15 @@ function ReceiptPage() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    setDoc(getDoc(token));
-    setLoaded(true);
+    let alive = true;
+    getPublicDoc(token).then((d) => {
+      if (!alive) return;
+      setDoc(d);
+      setLoaded(true);
+    });
+    return () => {
+      alive = false;
+    };
   }, [token]);
 
   if (!loaded) return null;

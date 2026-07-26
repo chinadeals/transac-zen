@@ -30,7 +30,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { getDoc, markPaid, docTotal, type PayDoc } from "@/lib/payment-store";
+import {
+  getPublicDoc,
+  recordPublicPayment,
+  logPublicEvent,
+  docTotal,
+  type PayDoc,
+} from "@/lib/payment-store";
 import { fmt, type PaymentMethod } from "@/lib/mock-data";
 import { StatusBadge } from "@/components/status-badge";
 
@@ -104,10 +110,17 @@ function PayPage() {
   const [processing, setProcessing] = useState(false);
   const [regionBlocked, setRegionBlocked] = useState(false);
   const [region, setRegion] = useState<string>("your region");
+  const [momoPhone, setMomoPhone] = useState("");
+  const [payError, setPayError] = useState<string | null>(null);
 
   useEffect(() => {
-    setDoc(getDoc(token));
-    setLoaded(true);
+    let alive = true;
+    getPublicDoc(token).then((d) => {
+      if (!alive) return;
+      setDoc(d);
+      setLoaded(true);
+      if (d) logPublicEvent(token, "document.viewed", { kind: d.kind });
+    });
     // best-effort geo detection; fallback silently
     try {
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
@@ -116,6 +129,9 @@ function PayPage() {
     } catch {
       // ignore
     }
+    return () => {
+      alive = false;
+    };
   }, [token]);
 
   const total = useMemo(() => (doc ? docTotal(doc) : 0), [doc]);
@@ -142,18 +158,34 @@ function PayPage() {
 
   const confirmPay = async () => {
     if (!method) return;
+    setPayError(null);
     setProcessing(true);
+    logPublicEvent(doc.token, "payment.initiated", { method });
     // simulate network + auth
     await new Promise((r) => setTimeout(r, 1600));
     if (!isCrypto && !isMomo) {
       setProcessing(false);
       setRegionBlocked(true);
+      logPublicEvent(doc.token, "payment.region_blocked", { method });
       return;
     }
-    markPaid(doc.token, method);
-    setDoc(getDoc(doc.token));
+    try {
+      await recordPublicPayment({
+        token: doc.token,
+        method,
+        status: "approved",
+        phone: momoPhone || undefined,
+        walletAddress: isCrypto ? CRYPTO_ADDRESSES[method] : undefined,
+        txRef: `PF-${Date.now().toString(36).toUpperCase()}`,
+        meta: { rail: isCrypto ? "crypto" : "mobile_money" },
+      });
+      const fresh = await getPublicDoc(doc.token);
+      if (fresh) setDoc(fresh);
+      setStep("done");
+    } catch (err) {
+      setPayError(err instanceof Error ? err.message : "Payment could not be recorded.");
+    }
     setProcessing(false);
-    setStep("done");
   };
 
   const switchToAlt = (m: PaymentMethod) => {
@@ -206,6 +238,8 @@ function PayPage() {
                 onPay={confirmPay}
                 processing={processing}
                 amountLabel={fmt(total, doc.currency)}
+                phone={momoPhone}
+                onPhoneChange={setMomoPhone}
               />
             )}
           </div>
@@ -373,6 +407,8 @@ function DetailsCard({
   onPay,
   processing,
   amountLabel,
+  phone,
+  onPhoneChange,
 }: {
   method: PaymentMethod;
   doc: PayDoc;
@@ -381,6 +417,8 @@ function DetailsCard({
   onPay: () => void;
   processing: boolean;
   amountLabel: string;
+  phone: string;
+  onPhoneChange: (v: string) => void;
 }) {
   const isCard = ["Visa", "Mastercard", "Amex"].includes(method);
   const isCrypto = ["BTC", "USDT (TRC20)"].includes(method);
@@ -397,7 +435,7 @@ function DetailsCard({
         {isCard && <CardForm />}
         {isBank && <BankInstructions doc={doc} />}
         {isCrypto && <CryptoInstructions method={method} amountUsd={total} />}
-        {isMomo && <MobileMoneyForm method={method} amountLabel={amountLabel} country={momoDef?.countries?.[0]} />}
+        {isMomo && <MobileMoneyForm method={method} amountLabel={amountLabel} country={momoDef?.countries?.[0]} phone={phone} onPhoneChange={onPhoneChange} />}
       </div>
 
       <div className="mt-6 flex justify-between">
@@ -414,10 +452,9 @@ function DetailsCard({
   );
 }
 
-function MobileMoneyForm({ method, amountLabel, country }: { method: PaymentMethod; amountLabel: string; country?: string }) {
+function MobileMoneyForm({ method, amountLabel, country, phone, onPhoneChange }: { method: PaymentMethod; amountLabel: string; country?: string; phone: string; onPhoneChange: (v: string) => void }) {
   const prefix = country ? COUNTRY_PREFIX[country] ?? "" : "";
   const currency = country ? COUNTRY_CURRENCY[country] : undefined;
-  const [phone, setPhone] = useState(prefix);
   return (
     <div className="space-y-3">
       <div className="rounded-xl bg-secondary/40 p-4 text-sm">
@@ -430,7 +467,7 @@ function MobileMoneyForm({ method, amountLabel, country }: { method: PaymentMeth
       <div>
         <Label>Mobile money number</Label>
         <Input className="mt-1.5" inputMode="tel" placeholder={`${prefix} 7XX XXX XXX`}
-          value={phone} onChange={(e) => setPhone(e.target.value)} />
+          value={phone || prefix} onChange={(e) => onPhoneChange(e.target.value)} />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
