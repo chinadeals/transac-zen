@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { createDoc, payLink, SAMPLE_IMAGES, type DocKind, type PayDoc } from "@/lib/payment-store";
 import { fmt } from "@/lib/mock-data";
+import { toast } from "sonner";
 
 interface Props {
   open: boolean;
@@ -40,6 +41,7 @@ export function CreateDocDialog({ open, onOpenChange, kind }: Props) {
   const [items, setItems] = useState<DraftItem[]>([emptyItem(0)]);
   const [created, setCreated] = useState<PayDoc | null>(null);
   const [copied, setCopied] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     if (!open) {
@@ -59,18 +61,29 @@ export function CreateDocDialog({ open, onOpenChange, kind }: Props) {
     setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
   };
 
-  const submit = () => {
-    if (!clientName || items.length === 0 || items.some((i) => !i.name || i.unitPrice <= 0)) return;
-    const doc = createDoc({
-      kind,
-      clientName,
-      clientEmail,
-      currency,
-      items,
-      notes,
-      dueInDays: kind === "invoice" ? dueInDays : undefined,
-    });
-    setCreated(doc);
+  const submit = async () => {
+    if (!clientName || items.length === 0 || items.some((i) => !i.name || i.unitPrice <= 0)) {
+      toast.error("Add a client name and at least one priced item.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const doc = await createDoc({
+        kind,
+        clientName,
+        clientEmail,
+        currency,
+        items,
+        notes,
+        dueInDays: kind === "invoice" ? dueInDays : undefined,
+      });
+      setCreated(doc);
+      toast.success("Payment link generated");
+      window.dispatchEvent(new Event("payflow:docs-changed"));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not create document");
+    }
+    setBusy(false);
   };
 
   const link = created ? payLink(created.token) : "";
@@ -174,8 +187,8 @@ export function CreateDocDialog({ open, onOpenChange, kind }: Props) {
 
             <DialogFooter>
               <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={submit}>
-                Create & generate link
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={submit} disabled={busy}>
+                {busy ? "Creating…" : "Create & generate link"}
               </Button>
             </DialogFooter>
           </>
