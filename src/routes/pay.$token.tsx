@@ -238,6 +238,8 @@ function PayPage() {
                 onPay={confirmPay}
                 processing={processing}
                 amountLabel={fmt(total, doc.currency)}
+                phone={momoPhone}
+                onPhoneChange={setMomoPhone}
               />
             )}
           </div>
