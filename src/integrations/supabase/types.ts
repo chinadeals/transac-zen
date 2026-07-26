@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          entity: string | null
+          entity_id: string | null
+          id: string
+          invoice_id: string | null
+          ip: string | null
+          merchant_id: string | null
+          meta: Json
+          payment_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          entity?: string | null
+          entity_id?: string | null
+          id?: string
+          invoice_id?: string | null
+          ip?: string | null
+          merchant_id?: string | null
+          meta?: Json
+          payment_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          entity?: string | null
+          entity_id?: string | null
+          id?: string
+          invoice_id?: string | null
+          ip?: string | null
+          merchant_id?: string | null
+          meta?: Json
+          payment_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       collection_accounts: {
         Row: {
           country: string | null
@@ -53,6 +98,118 @@ export type Database = {
         }
         Relationships: []
       }
+      invoice_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          invoice_id: string
+          name: string
+          quantity: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          invoice_id: string
+          name: string
+          quantity?: number
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          invoice_id?: string
+          name?: string
+          quantity?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          client_country: string | null
+          client_email: string | null
+          client_name: string
+          client_phone: string | null
+          converted_from: string | null
+          created_at: string
+          currency: string
+          due_at: string | null
+          id: string
+          merchant_id: string
+          notes: string | null
+          number: string
+          status: Database["public"]["Enums"]["doc_status"]
+          subtotal: number
+          tax: number
+          token: string
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          client_country?: string | null
+          client_email?: string | null
+          client_name: string
+          client_phone?: string | null
+          converted_from?: string | null
+          created_at?: string
+          currency?: string
+          due_at?: string | null
+          id?: string
+          merchant_id: string
+          notes?: string | null
+          number: string
+          status?: Database["public"]["Enums"]["doc_status"]
+          subtotal?: number
+          tax?: number
+          token: string
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          client_country?: string | null
+          client_email?: string | null
+          client_name?: string
+          client_phone?: string | null
+          converted_from?: string | null
+          created_at?: string
+          currency?: string
+          due_at?: string | null
+          id?: string
+          merchant_id?: string
+          notes?: string | null
+          number?: string
+          status?: Database["public"]["Enums"]["doc_status"]
+          subtotal?: number
+          tax?: number
+          token?: string
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_converted_from_fkey"
+            columns: ["converted_from"]
+            isOneToOne: false
+            referencedRelation: "quotations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       live_sessions: {
         Row: {
           last_seen: string
@@ -71,33 +228,227 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount: number
+          collection_account_id: string | null
+          created_at: string
+          currency: string
+          id: string
+          invoice_id: string | null
+          merchant_id: string | null
+          meta: Json
+          method: string
+          phone: string | null
+          status: Database["public"]["Enums"]["payment_status"]
+          tx_ref: string | null
+          updated_at: string
+          wallet_address: string | null
+        }
+        Insert: {
+          amount: number
+          collection_account_id?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          invoice_id?: string | null
+          merchant_id?: string | null
+          meta?: Json
+          method: string
+          phone?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          tx_ref?: string | null
+          updated_at?: string
+          wallet_address?: string | null
+        }
+        Update: {
+          amount?: number
+          collection_account_id?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          invoice_id?: string | null
+          merchant_id?: string | null
+          meta?: Json
+          method?: string
+          phone?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          tx_ref?: string | null
+          updated_at?: string
+          wallet_address?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_collection_account_id_fkey"
+            columns: ["collection_account_id"]
+            isOneToOne: false
+            referencedRelation: "collection_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
+          brand_color: string | null
           company: string | null
           country: string | null
           created_at: string
+          default_currency: string | null
           email: string | null
           full_name: string | null
           id: string
+          industry: string | null
+          invoice_footer: string | null
+          logo_url: string | null
+          onboarded: boolean
+          phone: string | null
+          tax_id: string | null
           updated_at: string
+          website: string | null
         }
         Insert: {
+          brand_color?: string | null
           company?: string | null
           country?: string | null
           created_at?: string
+          default_currency?: string | null
           email?: string | null
           full_name?: string | null
           id: string
+          industry?: string | null
+          invoice_footer?: string | null
+          logo_url?: string | null
+          onboarded?: boolean
+          phone?: string | null
+          tax_id?: string | null
           updated_at?: string
+          website?: string | null
         }
         Update: {
+          brand_color?: string | null
           company?: string | null
           country?: string | null
           created_at?: string
+          default_currency?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
+          industry?: string | null
+          invoice_footer?: string | null
+          logo_url?: string | null
+          onboarded?: boolean
+          phone?: string | null
+          tax_id?: string | null
           updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      quotation_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          quantity: number
+          quotation_id: string
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          quantity?: number
+          quotation_id: string
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          quantity?: number
+          quotation_id?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotation_items_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "quotations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quotations: {
+        Row: {
+          client_country: string | null
+          client_email: string | null
+          client_name: string
+          client_phone: string | null
+          created_at: string
+          currency: string
+          id: string
+          merchant_id: string
+          notes: string | null
+          number: string
+          status: Database["public"]["Enums"]["doc_status"]
+          subtotal: number
+          tax: number
+          token: string
+          total: number
+          updated_at: string
+          valid_until: string | null
+        }
+        Insert: {
+          client_country?: string | null
+          client_email?: string | null
+          client_name: string
+          client_phone?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          merchant_id: string
+          notes?: string | null
+          number: string
+          status?: Database["public"]["Enums"]["doc_status"]
+          subtotal?: number
+          tax?: number
+          token: string
+          total?: number
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Update: {
+          client_country?: string | null
+          client_email?: string | null
+          client_name?: string
+          client_phone?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          merchant_id?: string
+          notes?: string | null
+          number?: string
+          status?: Database["public"]["Enums"]["doc_status"]
+          subtotal?: number
+          tax?: number
+          token?: string
+          total?: number
+          updated_at?: string
+          valid_until?: string | null
         }
         Relationships: []
       }
@@ -145,6 +496,23 @@ export type Database = {
         | "orange"
         | "crypto"
         | "card"
+      doc_status:
+        | "draft"
+        | "sent"
+        | "viewed"
+        | "paid"
+        | "partially_paid"
+        | "overdue"
+        | "cancelled"
+        | "expired"
+        | "approved"
+        | "declined"
+      payment_status:
+        | "pending"
+        | "processing"
+        | "approved"
+        | "failed"
+        | "refunded"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -281,6 +649,25 @@ export const Constants = {
         "orange",
         "crypto",
         "card",
+      ],
+      doc_status: [
+        "draft",
+        "sent",
+        "viewed",
+        "paid",
+        "partially_paid",
+        "overdue",
+        "cancelled",
+        "expired",
+        "approved",
+        "declined",
+      ],
+      payment_status: [
+        "pending",
+        "processing",
+        "approved",
+        "failed",
+        "refunded",
       ],
     },
   },
