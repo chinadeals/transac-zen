@@ -405,6 +405,8 @@ function DetailsCard({
   onPay,
   processing,
   amountLabel,
+  phone,
+  onPhoneChange,
 }: {
   method: PaymentMethod;
   doc: PayDoc;
@@ -413,6 +415,8 @@ function DetailsCard({
   onPay: () => void;
   processing: boolean;
   amountLabel: string;
+  phone: string;
+  onPhoneChange: (v: string) => void;
 }) {
   const isCard = ["Visa", "Mastercard", "Amex"].includes(method);
   const isCrypto = ["BTC", "USDT (TRC20)"].includes(method);
@@ -429,7 +433,7 @@ function DetailsCard({
         {isCard && <CardForm />}
         {isBank && <BankInstructions doc={doc} />}
         {isCrypto && <CryptoInstructions method={method} amountUsd={total} />}
-        {isMomo && <MobileMoneyForm method={method} amountLabel={amountLabel} country={momoDef?.countries?.[0]} phone={momoPhone} onPhoneChange={setMomoPhone} />}
+        {isMomo && <MobileMoneyForm method={method} amountLabel={amountLabel} country={momoDef?.countries?.[0]} phone={phone} onPhoneChange={onPhoneChange} />}
       </div>
 
       <div className="mt-6 flex justify-between">
