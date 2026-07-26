@@ -478,12 +478,40 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_payout_targets: {
+        Args: { _country?: string }
+        Returns: {
+          country: string
+          currency: string
+          details: Json
+          id: string
+          kind: Database["public"]["Enums"]["collection_kind"]
+          label: string
+        }[]
+      }
+      get_public_doc: { Args: { _token: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      log_public_doc_event: {
+        Args: { _action: string; _meta?: Json; _token: string }
+        Returns: undefined
+      }
+      record_public_payment: {
+        Args: {
+          _meta?: Json
+          _method: string
+          _phone?: string
+          _status?: string
+          _token: string
+          _tx_ref?: string
+          _wallet_address?: string
+        }
+        Returns: string
       }
     }
     Enums: {
