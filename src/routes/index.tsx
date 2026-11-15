@@ -1,20 +1,27 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import {
+  ArrowDownRight,
   ArrowRight,
-  CheckCircle2,
-  ShieldCheck,
-  Zap,
-  Globe2,
-  CreditCard,
-  Building2,
+  ArrowUpRight,
+  Banknote,
   Bitcoin,
+  Check,
+  ChevronDown,
+  CircleCheck,
+  Code2,
+  CreditCard,
   FileText,
-  BarChart3,
-  Lock,
+  Globe2,
+  Layers3,
+  LockKeyhole,
   Menu,
+  Radio,
+  ReceiptText,
+  ShieldCheck,
+  Smartphone,
   X,
-  Sparkles,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,520 +34,284 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "PayFlow Gateway — Generate Invoices & Accept Payments Worldwide" },
+      { title: "PayFlow Gateway — Business payments, clearly connected" },
       {
         name: "description",
         content:
-          "The all-in-one payment platform for modern businesses. Send quotations, issue invoices, and accept cards, bank transfers, and crypto in 180+ countries.",
+          "Create quotations, issue invoices, and give customers a clear way to pay through the payment methods configured for your business.",
       },
-      { property: "og:title", content: "PayFlow Gateway — Global business payments" },
+      { property: "og:title", content: "PayFlow Gateway — Business payments, clearly connected" },
       {
         property: "og:description",
-        content:
-          "Quotations, invoices, and multi-channel payments — from one enterprise-grade dashboard.",
+        content: "Quotations, invoices, payment links, and tracking in one workspace.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Landing,
 });
 
+const activityRows = [
+  { id: "INV-1048", method: "Mobile money", amount: "$2,480.00", status: "Paid" },
+  { id: "INV-1047", method: "Bank transfer", amount: "$860.00", status: "Processing" },
+  { id: "INV-1046", method: "Digital currency", amount: "$1,240.00", status: "Paid" },
+];
+
+function Brand({ inverse = false }: { inverse?: boolean }) {
+  return (
+    <Link to="/" className="inline-flex shrink-0 items-center gap-2.5" aria-label="PayFlow Gateway home">
+      <span className={`grid size-8 place-items-center rounded-md ${inverse ? "bg-accent text-accent-foreground" : "bg-primary text-primary-foreground"}`}>
+        <Layers3 className="size-4" strokeWidth={2.2} />
+      </span>
+      <span className="font-display text-base font-semibold tracking-normal">PayFlow<span className="font-normal opacity-65"> Gateway</span></span>
+    </Link>
+  );
+}
+
 function Landing() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Nav />
-      <Hero />
-      <LogoStrip />
-      <Features />
-      <PaymentMethods />
-      <Benefits />
-      <Security />
-      <Pricing />
-      <Testimonials />
-      <FAQ />
-      <Contact />
+      <Navigation />
+      <main>
+        <Hero />
+        <Workflow />
+        <Infrastructure />
+        <GlobalPayments />
+        <DeveloperSection />
+        <SecuritySection />
+        <Questions />
+        <ClosingSection />
+      </main>
       <Footer />
     </div>
   );
 }
 
-function Nav() {
+function Navigation() {
   const [open, setOpen] = useState(false);
   const links = [
-    { label: "Features", href: "#features" },
-    { label: "Payments", href: "#payments" },
-    { label: "Security", href: "#security" },
+    { label: "Products", href: "#products" },
+    { label: "Solutions", href: "#solutions" },
+    { label: "Developers", href: "#developers" },
     { label: "Pricing", href: "#pricing" },
-    { label: "FAQ", href: "#faq" },
+    { label: "Company", href: "#company" },
   ];
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:px-8">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="grid h-8 w-8 place-items-center rounded-md bg-primary text-primary-foreground font-bold">
-            P
-          </div>
-          <span className="font-display text-lg font-bold tracking-tight">PayFlow</span>
-        </Link>
-        <nav className="hidden items-center gap-8 md:flex">
-          {links.map((l) => (
-            <a key={l.href} href={l.href} className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              {l.label}
+    <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur-sm">
+      <div className="mx-auto grid min-h-[68px] max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 sm:px-6 lg:grid-cols-[1fr_auto_1fr] lg:px-10">
+        <Brand />
+        <nav aria-label="Main navigation" className="hidden items-center gap-7 lg:flex">
+          {links.map((link) => (
+            <a key={link.label} href={link.href} className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground">
+              {link.label}
             </a>
           ))}
         </nav>
-        <div className="hidden items-center gap-2 md:flex">
-          <Button variant="ghost" asChild>
-            <Link to="/login">Sign in</Link>
-          </Button>
-          <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
-            <Link to="/signup">
-              Get started <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
-          </Button>
+        <div className="hidden items-center justify-end gap-2 lg:flex">
+          <Button asChild variant="ghost" size="sm"><Link to="/login">Sign in</Link></Button>
+          <Button asChild size="sm"><Link to="/signup">Get started <ArrowRight className="ml-1.5 size-3.5" /></Link></Button>
         </div>
-        <button className="md:hidden" onClick={() => setOpen((v) => !v)} aria-label="Menu">
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className="lg:hidden"
+          aria-label={open ? "Close navigation" : "Open navigation"}
+          aria-expanded={open}
+          onClick={() => setOpen((value) => !value)}
+        >
+          {open ? <X /> : <Menu />}
+        </Button>
       </div>
       {open && (
-        <div className="border-t border-border bg-background md:hidden">
-          <div className="flex flex-col gap-2 px-4 py-4">
-            {links.map((l) => (
-              <a key={l.href} href={l.href} onClick={() => setOpen(false)} className="py-1 text-sm font-medium">
-                {l.label}
+        <nav aria-label="Mobile navigation" className="border-t border-border bg-background px-4 py-4 lg:hidden">
+          <div className="mx-auto flex max-w-7xl flex-col gap-1">
+            {links.map((link) => (
+              <a key={link.label} href={link.href} onClick={() => setOpen(false)} className="rounded-sm px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground">
+                {link.label}
               </a>
             ))}
-            <div className="mt-2 flex gap-2">
-              <Button variant="outline" asChild className="flex-1">
-                <Link to="/login">Sign in</Link>
-              </Button>
-              <Button asChild className="flex-1 bg-primary text-primary-foreground">
-                <Link to="/signup">Sign up</Link>
-              </Button>
+            <div className="mt-2 grid grid-cols-2 gap-2 border-t border-border pt-3">
+              <Button asChild variant="outline"><Link to="/login">Sign in</Link></Button>
+              <Button asChild><Link to="/signup">Get started</Link></Button>
             </div>
           </div>
-        </div>
+        </nav>
       )}
     </header>
   );
 }
 
 function Hero() {
+  const [period, setPeriod] = useState("30 days");
   return (
-    <section className="relative overflow-hidden">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,theme(colors.accent/30),transparent_60%)]" />
-      <div className="mx-auto grid max-w-7xl gap-12 px-4 py-16 md:grid-cols-2 md:px-8 md:py-24 lg:py-32">
-        <div className="flex flex-col justify-center">
-          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
-            <Sparkles className="h-3.5 w-3.5" />
-            Enterprise payments. Built for the whole world.
-          </span>
-          <h1 className="mt-6 font-display text-5xl font-bold tracking-tight md:text-6xl lg:text-7xl">
-            Generate invoices <br />
-            <span className="relative inline-block">
-              <span className="relative z-10">& accept payments</span>
-              <span className="absolute inset-x-0 bottom-1 -z-0 h-3 bg-accent md:h-4" />
-            </span>{" "}
-            worldwide.
+    <section className="overflow-hidden border-b border-border">
+      <div className="mx-auto max-w-7xl px-4 pb-12 pt-14 sm:px-6 sm:pb-16 sm:pt-20 lg:px-10 lg:pt-24">
+        <div className="max-w-3xl">
+          <p className="flex items-center gap-2 text-xs font-semibold uppercase text-primary">
+            <span className="h-px w-7 bg-primary" /> Payment operations for modern business
+          </p>
+          <h1 className="mt-5 max-w-3xl font-display text-4xl font-semibold leading-[1.1] tracking-normal sm:text-5xl lg:text-6xl">
+            From the first quote to the final payment.
           </h1>
-          <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-            PayFlow Gateway is the fintech-grade platform your business needs to
-            quote, invoice, and collect — via cards, bank transfers, and crypto —
-            from customers in 180+ countries.
+          <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
+            Create quotations, send invoices, and let customers pay through the methods available to your business—all in one clear workflow.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Button size="lg" asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
-              <Link to="/signup">
-                Start free <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link to="/dashboard">See live demo</Link>
-            </Button>
-          </div>
-          <div className="mt-8 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
-            <span className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-primary" /> No setup fees
-            </span>
-            <span className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-primary" /> PCI-DSS Level 1
-            </span>
-            <span className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-primary" /> 180+ countries
-            </span>
+          <div className="mt-7 flex flex-wrap items-center gap-3">
+            <Button asChild size="lg"><Link to="/signup">Get started <ArrowRight className="ml-1.5 size-4" /></Link></Button>
+            <Button asChild size="lg" variant="outline"><a href="#products">Explore the platform <ArrowDownRight className="ml-1.5 size-4" /></a></Button>
           </div>
         </div>
 
-        <div className="relative">
-          <div className="glass-card relative rounded-3xl p-6 shadow-[0_20px_60px_-20px_theme(colors.primary/40)]">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-widest text-muted-foreground">Invoice</p>
-                <p className="font-display text-2xl font-bold">INV-3211</p>
-              </div>
-              <span className="rounded-full bg-warning/20 px-3 py-1 text-xs font-semibold text-warning-foreground">
-                Partially Paid
-              </span>
+        <div className="mt-12 overflow-hidden border border-border bg-card shadow-elevated sm:mt-16">
+          <div className="grid min-h-12 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-b border-border px-4 sm:px-6">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span className="grid size-7 shrink-0 place-items-center rounded-sm bg-primary text-primary-foreground"><Layers3 className="size-3.5" /></span>
+              <span className="truncate text-xs font-semibold sm:text-sm">Workspace overview</span>
+              <span className="hidden border-l border-border pl-2 text-xs text-muted-foreground sm:inline">Illustrative preview</span>
             </div>
-            <div className="mt-6 rounded-2xl bg-primary p-6 text-primary-foreground">
-              <p className="text-xs uppercase tracking-widest opacity-70">Amount due</p>
-              <p className="mt-1 font-display text-4xl font-bold">$64,500.00</p>
-              <p className="mt-1 text-sm opacity-80">Sahara Solar · Due Jul 25</p>
-              <div className="mt-6 flex gap-2">
-                <div className="flex-1 rounded-lg bg-primary-foreground/10 px-3 py-2 text-xs font-medium">
-                  Visa •••• 4242
-                </div>
-                <div className="rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-accent-foreground">
-                  Pay now →
-                </div>
-              </div>
-            </div>
-            <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
-              {[
-                { l: "Card", v: "48%" },
-                { l: "Bank", v: "27%" },
-                { l: "Crypto", v: "25%" },
-              ].map((m) => (
-                <div key={m.l} className="rounded-lg border border-border p-2">
-                  <p className="text-muted-foreground">{m.l}</p>
-                  <p className="font-display font-bold">{m.v}</p>
-                </div>
+            <div className="flex items-center gap-1" aria-label="Preview period">
+              {["7 days", "30 days", "90 days"].map((item) => (
+                <button key={item} type="button" onClick={() => setPeriod(item)} aria-pressed={period === item}
+                  className={`rounded-sm px-2 py-1.5 text-[10px] font-medium transition-colors sm:px-2.5 sm:text-xs ${period === item ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+                  {item}
+                </button>
               ))}
             </div>
           </div>
-          <div className="absolute -left-6 -bottom-6 hidden rounded-2xl border border-border bg-card p-4 shadow-lg md:block">
-            <p className="text-xs text-muted-foreground">Monthly revenue</p>
-            <p className="font-display text-2xl font-bold">$128,500</p>
-            <p className="text-xs text-success">↑ 26% vs last month</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
 
-function LogoStrip() {
-  const items = ["Northwind", "Helios", "Kaizen", "Andes", "Bluewave", "Sahara Solar", "Loop"];
-  return (
-    <section className="border-y border-border/60 bg-secondary/40">
-      <div className="mx-auto max-w-7xl px-4 py-8 md:px-8">
-        <p className="text-center text-xs uppercase tracking-widest text-muted-foreground">
-          Trusted by finance teams at fast-moving businesses
-        </p>
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
-          {items.map((n) => (
-            <span key={n} className="font-display text-lg font-semibold text-muted-foreground/70">
-              {n}
-            </span>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Features() {
-  const items = [
-    { icon: FileText, title: "Quotations that close", desc: "Draft, send, and track quotations with client approval workflows and automatic conversion to invoices." },
-    { icon: Zap, title: "Instant invoicing", desc: "Generate branded PDF invoices with unique numbers, tax, discounts, and multi-currency support in one click." },
-    { icon: Globe2, title: "Global reach", desc: "Collect from customers in 180+ countries in the currency they prefer, with automatic FX." },
-    { icon: BarChart3, title: "Realtime analytics", desc: "Track revenue, payment success rates, top clients, and outstanding invoices — live." },
-    { icon: ShieldCheck, title: "Enterprise security", desc: "MFA, RBAC, audit logs, transaction monitoring, and fraud alerts on every account." },
-    { icon: Sparkles, title: "Automations", desc: "Auto-approve verified payments, send reminders, and reconcile — without lifting a finger." },
-  ];
-  return (
-    <section id="features" className="mx-auto max-w-7xl px-4 py-20 md:px-8 md:py-28">
-      <div className="mx-auto max-w-2xl text-center">
-        <span className="text-xs font-semibold uppercase tracking-widest text-primary">
-          Everything you need
-        </span>
-        <h2 className="mt-3 font-display text-4xl font-bold md:text-5xl">
-          One platform, from quote to cash.
-        </h2>
-        <p className="mt-4 text-lg text-muted-foreground">
-          Replace the patchwork of spreadsheets, PDF tools, and payment processors with a single dashboard.
-        </p>
-      </div>
-      <div className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {items.map((f) => (
-          <div key={f.title} className="rounded-2xl border border-border bg-card p-6 transition hover:border-primary/40 hover:shadow-[var(--shadow-card)]">
-            <div className="grid h-11 w-11 place-items-center rounded-xl bg-primary text-primary-foreground">
-              <f.icon className="h-5 w-5" />
-            </div>
-            <h3 className="mt-5 font-display text-xl font-bold">{f.title}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">{f.desc}</p>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function PaymentMethods() {
-  const groups = [
-    {
-      icon: CreditCard,
-      title: "Card payments",
-      items: ["Visa", "Mastercard", "American Express", "Apple Pay & Google Pay"],
-    },
-    {
-      icon: Building2,
-      title: "Bank transfers",
-      items: ["Local bank transfer", "International wire (SWIFT)", "Account verification", "ACH & SEPA"],
-    },
-    {
-      icon: Bitcoin,
-      title: "Cryptocurrency",
-      items: ["Bitcoin (BTC)", "Ethereum (ETH)", "USDT (TRC20)", "USDT (ERC20)"],
-    },
-  ];
-  return (
-    <section id="payments" className="bg-primary text-primary-foreground">
-      <div className="mx-auto max-w-7xl px-4 py-20 md:px-8 md:py-28">
-        <div className="grid gap-10 md:grid-cols-2 md:items-end">
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-widest text-accent">
-              Payment methods
-            </span>
-            <h2 className="mt-3 font-display text-4xl font-bold md:text-5xl">
-              Every way your customers want to pay.
-            </h2>
-          </div>
-          <p className="text-primary-foreground/70">
-            Accept cards, bank transfers, and crypto from a single checkout. We verify each
-            transaction, update your invoice automatically, and notify both sides.
-          </p>
-        </div>
-        <div className="mt-12 grid gap-4 md:grid-cols-3">
-          {groups.map((g) => (
-            <div key={g.title} className="rounded-2xl border border-primary-foreground/15 bg-primary-foreground/5 p-6 backdrop-blur">
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-accent text-accent-foreground">
-                <g.icon className="h-5 w-5" />
+          <div className="grid lg:grid-cols-[minmax(0,1.55fr)_minmax(280px,0.8fr)]">
+            <div className="min-w-0 border-b border-border p-4 sm:p-6 lg:border-b-0 lg:border-r">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-5">
+                <Metric label="Collected" value="$48,290" delta="Illustrative" up />
+                <Metric label="Successful" value="1,204" delta="Payments" up />
+                <Metric label="In progress" value="18" delta="Payments" />
+                <Metric label="Needs review" value="06" delta="Attempts" alert />
               </div>
-              <h3 className="mt-5 font-display text-xl font-bold">{g.title}</h3>
-              <ul className="mt-4 space-y-2 text-sm text-primary-foreground/80">
-                {g.items.map((i) => (
-                  <li key={i} className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-accent" /> {i}
-                  </li>
+              <div className="mt-7 flex items-center justify-between gap-2">
+                <div><p className="text-xs text-muted-foreground">Payment volume</p><p className="mt-1 font-display text-xl font-semibold">$48,290.00</p></div>
+                <span className="text-[10px] text-muted-foreground sm:text-xs">Sample · {period}</span>
+              </div>
+              <div className="mt-4 h-36 sm:h-48">
+                <VolumeChart period={period} />
+              </div>
+              <div className="mt-2 flex items-center justify-between text-[10px] text-muted-foreground sm:text-xs">
+                <span>01 {period === "7 days" ? "Mon" : "Jun"}</span><span>10 {period === "7 days" ? "Wed" : "Jun"}</span><span>20 {period === "7 days" ? "Fri" : "Jun"}</span><span>30 {period === "7 days" ? "Sun" : "Jun"}</span>
+              </div>
+            </div>
+
+            <div className="min-w-0 p-4 sm:p-6">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-sm font-semibold">Recent activity</h2>
+                <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground sm:text-xs"><span className="size-1.5 rounded-full bg-success" /> Activity preview</span>
+              </div>
+              <div className="mt-4 divide-y divide-border">
+                {activityRows.map((row) => (
+                  <div key={row.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-3.5">
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <div className="grid size-8 shrink-0 place-items-center rounded-sm bg-secondary text-muted-foreground">
+                        <ReceiptText className="size-4" />
+                      </div>
+                      <div className="min-w-0"><p className="truncate text-xs font-medium">{row.id}</p><p className="mt-0.5 truncate text-[10px] text-muted-foreground">{row.method}</p></div>
+                    </div>
+                    <div className="text-right"><p className="text-xs font-semibold tabular-nums">{row.amount}</p><p className={`mt-0.5 text-[10px] ${row.status === "Paid" ? "text-success" : "text-warning-foreground"}`}>{row.status}</p></div>
+                  </div>
                 ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Benefits() {
-  const stats = [
-    { v: "180+", l: "Countries supported" },
-    { v: "99.99%", l: "Uptime SLA" },
-    { v: "<2s", l: "Avg. checkout time" },
-    { v: "$0", l: "Setup fees" },
-  ];
-  return (
-    <section className="mx-auto max-w-7xl px-4 py-20 md:px-8 md:py-28">
-      <div className="grid gap-12 md:grid-cols-2 md:items-center">
-        <div>
-          <span className="text-xs font-semibold uppercase tracking-widest text-primary">
-            Business benefits
-          </span>
-          <h2 className="mt-3 font-display text-4xl font-bold md:text-5xl">
-            Get paid faster, with less back-and-forth.
-          </h2>
-          <p className="mt-4 text-lg text-muted-foreground">
-            Approved quotations flow directly into invoices. Verified payments auto-close them.
-            Your team spends less time chasing and more time growing.
-          </p>
-          <ul className="mt-6 space-y-3 text-sm">
-            {[
-              "Convert approved quotations into invoices in one click",
-              "Automatic payment verification and reconciliation",
-              "Real-time notifications by email, SMS, and in-app",
-              "Client portal with self-service invoice history and receipts",
-            ].map((i) => (
-              <li key={i} className="flex items-start gap-2">
-                <CheckCircle2 className="mt-0.5 h-5 w-5 text-primary" />
-                <span>{i}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          {stats.map((s) => (
-            <div key={s.l} className="rounded-2xl border border-border bg-secondary/40 p-6">
-              <p className="font-display text-4xl font-bold text-primary">{s.v}</p>
-              <p className="mt-2 text-sm text-muted-foreground">{s.l}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Security() {
-  const items = [
-    { icon: Lock, title: "End-to-end encryption" },
-    { icon: ShieldCheck, title: "Multi-factor authentication" },
-    { icon: BarChart3, title: "Audit logs & monitoring" },
-    { icon: Zap, title: "Fraud detection alerts" },
-  ];
-  return (
-    <section id="security" className="border-y border-border bg-secondary/40">
-      <div className="mx-auto max-w-7xl px-4 py-20 md:px-8 md:py-24">
-        <div className="mx-auto max-w-2xl text-center">
-          <span className="text-xs font-semibold uppercase tracking-widest text-primary">
-            Security-first
-          </span>
-          <h2 className="mt-3 font-display text-4xl font-bold md:text-5xl">
-            Bank-grade security. Zero compromise.
-          </h2>
-        </div>
-        <div className="mt-12 grid gap-4 md:grid-cols-4">
-          {items.map((i) => (
-            <div key={i.title} className="rounded-2xl border border-border bg-card p-6 text-center">
-              <div className="mx-auto grid h-11 w-11 place-items-center rounded-xl bg-primary text-primary-foreground">
-                <i.icon className="h-5 w-5" />
               </div>
-              <h3 className="mt-4 font-display text-base font-bold">{i.title}</h3>
+              <div className="mt-2 flex items-center gap-2 border-t border-border pt-4 text-[10px] text-muted-foreground sm:text-xs">
+                <Radio className="size-3.5 shrink-0 text-primary" /> Payment methods depend on business setup and customer location.
+              </div>
             </div>
-          ))}
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border bg-secondary/40 px-4 py-2.5 text-[10px] text-muted-foreground sm:px-6 sm:text-xs">
+            <span>Sample interface · Illustrative figures, not live account data</span>
+            <Link to="/signup" className="inline-flex items-center gap-1 font-medium text-foreground hover:text-primary">Open your workspace <ArrowUpRight className="size-3" /></Link>
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-function Pricing() {
-  const plans = [
-    {
-      name: "Starter",
-      price: "$0",
-      per: "/month",
-      desc: "For freelancers and small teams",
-      features: ["Up to 20 invoices/mo", "Card & bank payments", "Basic analytics", "Email support"],
-      cta: "Start free",
-      highlight: false,
-    },
-    {
-      name: "Business",
-      price: "$49",
-      per: "/month",
-      desc: "For growing companies",
-      features: ["Unlimited invoices", "Crypto payments", "Advanced analytics", "Client portal", "Priority support"],
-      cta: "Choose Business",
-      highlight: true,
-    },
-    {
-      name: "Enterprise",
-      price: "Custom",
-      per: "",
-      desc: "For teams needing scale & SLAs",
-      features: ["Custom volume pricing", "SSO & SAML", "Dedicated CSM", "99.99% uptime SLA", "Audit exports"],
-      cta: "Talk to sales",
-      highlight: false,
-    },
+function Metric({ label, value, delta, up, alert }: { label: string; value: string; delta: string; up?: boolean; alert?: boolean }) {
+  return (
+    <div className="min-w-0 border-l border-border pl-3 first:border-l-0 first:pl-0 sm:pl-4">
+      <p className="truncate text-[10px] text-muted-foreground sm:text-xs">{label}</p>
+      <p className="mt-1 font-display text-lg font-semibold tabular-nums sm:text-xl">{value}</p>
+      <p className={`mt-1 flex items-center gap-1 text-[9px] sm:text-[10px] ${alert ? "text-warning-foreground" : up ? "text-success" : "text-muted-foreground"}`}>
+        {up ? <ArrowUpRight className="size-3" /> : alert ? <span className="size-1.5 rounded-full bg-warning" /> : null}{delta}
+      </p>
+    </div>
+  );
+}
+
+function VolumeChart({ period }: { period: string }) {
+  const d = period === "7 days"
+    ? "M0 115 C35 102 45 126 78 88 S130 98 156 63 204 80 232 46 276 60 300 24"
+    : period === "90 days"
+      ? "M0 106 C28 90 44 110 72 92 S116 103 145 70 183 88 214 52 258 75 278 43 291 35 300 12"
+      : "M0 108 C24 102 36 75 60 86 S91 105 116 68 149 82 171 59 204 83 225 49 251 62 273 30 289 41 300 20";
+  return (
+    <svg className="h-full w-full overflow-visible" viewBox="0 0 300 140" preserveAspectRatio="none" role="img" aria-label={`Illustrative payment volume chart, ${period}`}>
+      <defs><linearGradient id="volumeFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="var(--color-primary)" stopOpacity="0.18" /><stop offset="1" stopColor="var(--color-primary)" stopOpacity="0" /></linearGradient></defs>
+      {[25, 65, 105].map((y) => <line key={y} x1="0" x2="300" y1={y} y2={y} stroke="var(--color-border)" strokeDasharray="3 5" />)}
+      <path d={`${d} L300 140 L0 140 Z`} fill="url(#volumeFill)" />
+      <path d={d} fill="none" stroke="var(--color-primary)" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
+      <circle cx="300" cy={period === "7 days" ? "24" : period === "90 days" ? "12" : "20"} r="4" fill="var(--color-card)" stroke="var(--color-primary)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
+}
+
+function SectionIntro({ eyebrow, title, copy, dark = false }: { eyebrow: string; title: string; copy: string; dark?: boolean }) {
+  return (
+    <div className="max-w-2xl">
+      <p className={`text-xs font-semibold uppercase ${dark ? "text-accent" : "text-primary"}`}>{eyebrow}</p>
+      <h2 className="mt-3 font-display text-3xl font-semibold leading-tight tracking-normal sm:text-4xl">{title}</h2>
+      <p className={`mt-4 text-base leading-7 ${dark ? "text-primary-foreground/70" : "text-muted-foreground"}`}>{copy}</p>
+    </div>
+  );
+}
+
+function Workflow() {
+  const stages = [
+    { n: "01", icon: FileText, title: "Prepare a quotation", copy: "Set out the work, item by item, and share a clear proposal with your customer." },
+    { n: "02", icon: ReceiptText, title: "Issue an invoice", copy: "Move approved work into a structured invoice with its own payment link." },
+    { n: "03", icon: CircleCheck, title: "Track the outcome", copy: "See when a link is opened and follow payment activity through to its receipt." },
   ];
   return (
-    <section id="pricing" className="mx-auto max-w-7xl px-4 py-20 md:px-8 md:py-28">
-      <div className="mx-auto max-w-2xl text-center">
-        <span className="text-xs font-semibold uppercase tracking-widest text-primary">
-          Pricing
-        </span>
-        <h2 className="mt-3 font-display text-4xl font-bold md:text-5xl">Simple, transparent pricing.</h2>
-        <p className="mt-4 text-lg text-muted-foreground">
-          Pay only for what you use. Cancel anytime.
-        </p>
-      </div>
-      <div className="mt-14 grid gap-4 md:grid-cols-3">
-        {plans.map((p) => (
-          <div
-            key={p.name}
-            className={
-              "rounded-3xl border p-8 " +
-              (p.highlight
-                ? "border-primary bg-primary text-primary-foreground shadow-[var(--shadow-elevated)] md:-translate-y-2"
-                : "border-border bg-card")
-            }
-          >
-            <p className="font-display text-lg font-bold">{p.name}</p>
-            <p className={p.highlight ? "text-primary-foreground/70 text-sm" : "text-muted-foreground text-sm"}>
-              {p.desc}
-            </p>
-            <div className="mt-6 flex items-baseline gap-1">
-              <span className="font-display text-5xl font-bold">{p.price}</span>
-              <span className={p.highlight ? "text-primary-foreground/70" : "text-muted-foreground"}>{p.per}</span>
-            </div>
-            <ul className="mt-6 space-y-2 text-sm">
-              {p.features.map((f) => (
-                <li key={f} className="flex items-center gap-2">
-                  <CheckCircle2 className={p.highlight ? "h-4 w-4 text-accent" : "h-4 w-4 text-primary"} />
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
-            <Button
-              asChild
-              className={
-                "mt-8 w-full " +
-                (p.highlight
-                  ? "bg-accent text-accent-foreground hover:bg-accent/90"
-                  : "bg-primary text-primary-foreground hover:bg-primary/90")
-              }
-            >
-              <Link to="/signup">{p.cta}</Link>
-            </Button>
-          </div>
+    <section id="products" className="mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20 lg:px-10 lg:py-24">
+      <SectionIntro eyebrow="One connected workflow" title="Clarity from quote to cash." copy="Keep the customer journey and the work behind it in view, instead of scattering every step across separate tools." />
+      <div className="divide-y divide-border border-y border-border">
+        {stages.map((stage) => (
+          <article key={stage.n} className="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-4 py-5 sm:grid-cols-[3rem_minmax(0,1fr)_auto] sm:items-start sm:gap-6 sm:py-6">
+            <span className="pt-1 font-mono text-xs text-muted-foreground">{stage.n}</span>
+            <div><h3 className="font-display text-lg font-semibold">{stage.title}</h3><p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">{stage.copy}</p></div>
+            <stage.icon className="hidden size-5 text-primary sm:mt-1 sm:block" strokeWidth={1.7} />
+          </article>
         ))}
       </div>
     </section>
   );
 }
 
-function Testimonials() {
-  const items = [
-    {
-      quote:
-        "PayFlow cut our days-sales-outstanding from 42 to 9. Quotation-to-cash is now a single flow.",
-      name: "Ada Okoye",
-      role: "CFO, Northwind Traders",
-    },
-    {
-      quote:
-        "We accept crypto and wires from customers on four continents. Reconciliation runs itself.",
-      name: "Farid Nasser",
-      role: "Head of Finance, Sahara Solar",
-    },
-    {
-      quote:
-        "The dashboard is beautiful, the security is boring — exactly what an enterprise finance tool should be.",
-      name: "Priya Menon",
-      role: "COO, Loop Analytics",
-    },
+function Infrastructure() {
+  const methods = [
+    { icon: CreditCard, name: "Cards", detail: "Card processing, when configured" },
+    { icon: Smartphone, name: "Mobile money", detail: "Regional providers, where available" },
+    { icon: Banknote, name: "Bank transfer", detail: "Local and international rails" },
+    { icon: Bitcoin, name: "Digital currency", detail: "Supported assets and networks" },
   ];
   return (
-    <section className="border-y border-border bg-secondary/40">
-      <div className="mx-auto max-w-7xl px-4 py-20 md:px-8 md:py-24">
-        <h2 className="max-w-2xl font-display text-4xl font-bold md:text-5xl">
-          Loved by finance teams worldwide.
-        </h2>
-        <div className="mt-12 grid gap-4 md:grid-cols-3">
-          {items.map((t) => (
-            <figure key={t.name} className="rounded-2xl border border-border bg-card p-6">
-              <blockquote className="text-base leading-relaxed">"{t.quote}"</blockquote>
-              <figcaption className="mt-6 flex items-center gap-3">
-                <div className="grid h-10 w-10 place-items-center rounded-full bg-primary text-primary-foreground text-sm font-bold">
-                  {t.name.split(" ").map((w) => w[0]).join("")}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">{t.name}</p>
-                  <p className="text-xs text-muted-foreground">{t.role}</p>
-                </div>
-              </figcaption>
-            </figure>
+    <section id="solutions" className="border-y border-border bg-secondary/45">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[0.85fr_1.15fr] lg:items-center lg:gap-20 lg:px-10 lg:py-24">
+        <SectionIntro eyebrow="Payment infrastructure" title="Meet customers on familiar rails." copy="Offer payment methods through your configured collection accounts. What customers can use depends on your region, provider setup, and currency." />
+        <div className="grid grid-cols-1 divide-y divide-border border-y border-border sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+          {methods.map((method, i) => (
+            <article key={method.name} className={`flex min-h-28 items-start gap-4 py-5 sm:px-5 sm:py-6 ${i > 1 ? "sm:border-t sm:border-border" : ""} ${i % 2 === 0 ? "sm:pl-0" : ""}`}>
+              <span className="grid size-9 shrink-0 place-items-center rounded-sm border border-border bg-card"><method.icon className="size-4 text-primary" strokeWidth={1.7} /></span>
+              <div><h3 className="text-sm font-semibold">{method.name}</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">{method.detail}</p></div>
+            </article>
           ))}
         </div>
       </div>
@@ -548,66 +319,110 @@ function Testimonials() {
   );
 }
 
-function FAQ() {
-  const items = [
-    { q: "How long does it take to get started?", a: "You can sign up and send your first invoice in under 5 minutes. Live payments activate after quick verification." },
-    { q: "Which payment methods can I accept?", a: "Visa, Mastercard, Amex, local & international bank transfers, and crypto (BTC, ETH, USDT on TRC20/ERC20)." },
-    { q: "Do you support multi-currency invoicing?", a: "Yes. Invoice in the currency your customer prefers; we handle FX and settlement automatically." },
-    { q: "Is PayFlow secure?", a: "PayFlow is PCI-DSS Level 1 compliant, with MFA, RBAC, end-to-end encryption, and continuous transaction monitoring." },
-    { q: "Can I integrate with my existing tools?", a: "Yes — via native integrations (Stripe, PayPal, Flutterwave, Paystack, Wise, Binance Pay, Coinbase Commerce) and our Webhooks API." },
+function GlobalPayments() {
+  return (
+    <section className="bg-primary text-primary-foreground">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:gap-24 lg:px-10 lg:py-24">
+        <SectionIntro dark eyebrow="Operations, in context" title="Know what needs attention." copy="A single view brings payment status, invoice references, settlement details, and customer activity closer together—so teams can see what has happened and what remains open." />
+        <div className="border-y border-primary-foreground/20">
+          <div className="flex items-center justify-between gap-4 border-b border-primary-foreground/20 py-4">
+            <div className="flex items-center gap-3"><Globe2 className="size-5 text-accent" /><div><p className="text-sm font-semibold">Market-aware collection</p><p className="mt-1 text-xs text-primary-foreground/60">Availability follows your account setup</p></div></div>
+            <ChevronDown className="size-4 rotate-[-90deg] text-primary-foreground/50" />
+          </div>
+          <div className="grid grid-cols-2 divide-x divide-primary-foreground/20">
+            <div className="py-5 pr-4"><p className="text-xs text-primary-foreground/60">Payment tracking</p><p className="mt-2 text-sm font-medium">Initiated to completed</p></div>
+            <div className="py-5 pl-5"><p className="text-xs text-primary-foreground/60">Settlement visibility</p><p className="mt-2 text-sm font-medium">Reference and status</p></div>
+          </div>
+          <div className="flex items-center gap-3 border-t border-primary-foreground/20 py-4"><Zap className="size-4 text-accent" /><p className="text-xs leading-5 text-primary-foreground/70">Configured payment methods appear in the customer checkout flow.</p></div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function DeveloperSection() {
+  return (
+    <section id="developers" className="mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-20 lg:px-10 lg:py-24">
+      <div>
+        <p className="text-xs font-semibold uppercase text-primary">For the people who build</p>
+        <h2 className="mt-3 max-w-xl font-display text-3xl font-semibold leading-tight sm:text-4xl">A useful product before you write a line of code.</h2>
+        <p className="mt-4 max-w-xl text-base leading-7 text-muted-foreground">Start with shareable payment links. When you need more, connect your existing workflow using the integration options configured in your workspace.</p>
+        <div className="mt-6 flex flex-wrap gap-x-6 gap-y-3 text-sm text-muted-foreground">
+          <span className="flex items-center gap-2"><Check className="size-4 text-primary" /> Hosted checkout</span>
+          <span className="flex items-center gap-2"><Check className="size-4 text-primary" /> Public payment links</span>
+          <span className="flex items-center gap-2"><Check className="size-4 text-primary" /> Payment activity</span>
+        </div>
+      </div>
+      <div className="overflow-hidden border border-border bg-card">
+        <div className="flex items-center justify-between border-b border-border px-4 py-3 sm:px-5">
+          <div className="flex items-center gap-2 text-xs font-medium"><Code2 className="size-4 text-primary" /> Integration status</div>
+          <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground"><span className="size-1.5 rounded-full bg-success" /> Workspace preview</span>
+        </div>
+        <div className="space-y-0 px-4 py-2 font-mono text-xs sm:px-5">
+          <div className="flex gap-4 border-b border-border py-3"><span className="text-muted-foreground">01</span><span><span className="text-primary">const</span> invoice = <span className="text-warning-foreground">await</span> createInvoice(&#123;</span></div>
+          <div className="flex gap-4 border-b border-border py-3"><span className="text-muted-foreground">02</span><span className="pl-4">customer: <span className="text-primary">"customer@example.com"</span>,</span></div>
+          <div className="flex gap-4 border-b border-border py-3"><span className="text-muted-foreground">03</span><span className="pl-4">currency: <span className="text-primary">"USD"</span></span></div>
+          <div className="flex gap-4 py-3"><span className="text-muted-foreground">04</span><span>&#125;);</span></div>
+        </div>
+        <div className="flex items-center gap-2 border-t border-border bg-secondary/45 px-4 py-3 text-[10px] text-muted-foreground sm:px-5 sm:text-xs"><LockKeyhole className="size-3.5 shrink-0" /> Example only — API access depends on your integration setup.</div>
+      </div>
+    </section>
+  );
+}
+
+function SecuritySection() {
+  const safeguards = [
+    { icon: ShieldCheck, title: "Account access", copy: "Sign-in and workspace access are tied to your account." },
+    { icon: LockKeyhole, title: "Scoped records", copy: "Data access is governed by configured account permissions." },
+    { icon: Radio, title: "Activity visibility", copy: "Follow payment activity as it moves through the checkout flow." },
   ];
   return (
-    <section id="faq" className="mx-auto max-w-4xl px-4 py-20 md:px-8 md:py-28">
-      <div className="text-center">
-        <span className="text-xs font-semibold uppercase tracking-widest text-primary">FAQ</span>
-        <h2 className="mt-3 font-display text-4xl font-bold md:text-5xl">Common questions.</h2>
+    <section id="company" className="border-y border-border bg-secondary/45">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20 lg:px-10 lg:py-24">
+        <SectionIntro eyebrow="Trust is operational" title="Clear controls. Clear status." copy="A reliable payments workflow starts with access controls, transparent payment states, and records your team can follow—not unsupported promises." />
+        <div className="divide-y divide-border border-y border-border">
+          {safeguards.map((item, i) => (
+            <div key={item.title} className="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-4 py-5 sm:grid-cols-[3rem_minmax(0,1fr)_2rem] sm:items-center sm:gap-6 sm:py-6">
+              <span className="font-mono text-xs text-muted-foreground">0{i + 1}</span>
+              <div className="flex items-start gap-3"><item.icon className="mt-0.5 size-4 shrink-0 text-primary" /><div><h3 className="text-sm font-semibold">{item.title}</h3><p className="mt-1 text-sm leading-6 text-muted-foreground">{item.copy}</p></div></div>
+              <Check className="hidden size-4 text-primary sm:block" />
+            </div>
+          ))}
+        </div>
       </div>
-      <Accordion type="single" collapsible className="mt-12">
-        {items.map((f, i) => (
-          <AccordionItem key={f.q} value={`i-${i}`}>
-            <AccordionTrigger className="text-left font-display text-lg font-semibold">
-              {f.q}
-            </AccordionTrigger>
-            <AccordionContent className="text-muted-foreground">{f.a}</AccordionContent>
+    </section>
+  );
+}
+
+function Questions() {
+  const items = [
+    { q: "Can a customer pay without creating an account?", a: "Yes. You can share a public payment link with a customer, who can review the invoice or quotation and continue through the checkout flow without signing in." },
+    { q: "Which payment methods can I offer?", a: "Payment options depend on your configured collection accounts, region, provider setup, and currency. Customers see the methods available for that checkout." },
+    { q: "Can a quotation become an invoice?", a: "Yes. Approved quotations can be converted into invoices from your workspace." },
+    { q: "Where can I see payment activity?", a: "Your workspace shows payment and document activity, including statuses available from the configured payment flow." },
+  ];
+  return (
+    <section id="pricing" className="mx-auto max-w-4xl px-4 py-16 sm:px-6 sm:py-20 lg:py-24">
+      <div className="text-center"><p className="text-xs font-semibold uppercase text-primary">A few details</p><h2 className="mt-3 font-display text-3xl font-semibold sm:text-4xl">Questions, answered.</h2></div>
+      <Accordion type="single" collapsible className="mt-8 border-t border-border sm:mt-10">
+        {items.map((item, index) => (
+          <AccordionItem key={item.q} value={`item-${index}`}>
+            <AccordionTrigger className="py-5 text-left font-display text-base font-medium sm:text-lg">{item.q}</AccordionTrigger>
+            <AccordionContent className="max-w-3xl text-sm leading-6 text-muted-foreground">{item.a}</AccordionContent>
           </AccordionItem>
         ))}
       </Accordion>
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-x-2 text-sm text-muted-foreground"><span>Have a specific setup in mind?</span><a href="#get-started" className="inline-flex items-center gap-1 font-medium text-primary hover:underline">Talk with our team <ArrowRight className="size-3.5" /></a></div>
     </section>
   );
 }
 
-function Contact() {
+function ClosingSection() {
   return (
-    <section id="contact" className="mx-auto max-w-7xl px-4 pb-20 md:px-8 md:pb-28">
-      <div className="relative overflow-hidden rounded-3xl bg-primary p-10 text-primary-foreground md:p-16">
-        <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-accent/40 blur-3xl" />
-        <div className="relative grid gap-10 md:grid-cols-2 md:items-center">
-          <div>
-            <h2 className="font-display text-4xl font-bold md:text-5xl">
-              Ready to get paid, everywhere?
-            </h2>
-            <p className="mt-4 max-w-md text-primary-foreground/80">
-              Join thousands of businesses using PayFlow to send quotations, invoice
-              globally, and collect in minutes.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button size="lg" asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
-                <Link to="/signup">Create your account</Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild className="border-primary-foreground/40 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground">
-                <a href="mailto:sales@payflow.example">Talk to sales</a>
-              </Button>
-            </div>
-          </div>
-          <div className="rounded-2xl bg-primary-foreground/5 p-6 backdrop-blur">
-            <p className="text-sm font-medium uppercase tracking-widest text-accent">Contact</p>
-            <div className="mt-4 space-y-3 text-sm">
-              <p><span className="text-primary-foreground/60">Sales</span><br />sales@payflow.example</p>
-              <p><span className="text-primary-foreground/60">Support</span><br />support@payflow.example</p>
-              <p><span className="text-primary-foreground/60">Office</span><br />1 Payments Way, London EC2A</p>
-            </div>
-          </div>
-        </div>
+    <section id="get-started" className="border-t border-border bg-primary text-primary-foreground">
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-14 sm:px-6 sm:py-16 md:grid-cols-[minmax(0,1fr)_auto] md:items-center lg:px-10">
+        <div><p className="text-xs font-semibold uppercase text-accent">PayFlow Gateway</p><h2 className="mt-3 max-w-2xl font-display text-3xl font-semibold leading-tight sm:text-4xl">Bring your payment workflow into one view.</h2><p className="mt-3 max-w-2xl text-sm leading-6 text-primary-foreground/70">Start with quotations, invoices, and shareable payment links for your business.</p></div>
+        <Button asChild size="lg" variant="secondary"><Link to="/signup">Create an account <ArrowRight className="ml-1.5 size-4" /></Link></Button>
       </div>
     </section>
   );
@@ -615,38 +430,13 @@ function Contact() {
 
 function Footer() {
   return (
-    <footer className="border-t border-border bg-background">
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:grid-cols-4 md:px-8">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="grid h-8 w-8 place-items-center rounded-md bg-primary text-primary-foreground font-bold">P</div>
-            <span className="font-display text-lg font-bold">PayFlow</span>
-          </div>
-          <p className="mt-3 text-sm text-muted-foreground">
-            Global payments infrastructure for modern businesses.
-          </p>
-        </div>
-        {[
-          { title: "Product", links: ["Features", "Payments", "Pricing", "Security"] },
-          { title: "Company", links: ["About", "Careers", "Press", "Contact"] },
-          { title: "Legal", links: ["Terms", "Privacy", "Compliance", "Cookies"] },
-        ].map((c) => (
-          <div key={c.title}>
-            <p className="text-sm font-semibold">{c.title}</p>
-            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              {c.links.map((l) => (
-                <li key={l}>{l}</li>
-              ))}
-            </ul>
-          </div>
-        ))}
+    <footer className="bg-primary text-primary-foreground">
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 sm:py-12 md:grid-cols-[1.3fr_1fr_1fr] lg:px-10">
+        <div><Brand inverse /><p className="mt-4 max-w-xs text-sm leading-6 text-primary-foreground/65">Quotations, invoices, payment links, and transaction tracking for business.</p></div>
+        <div><p className="text-xs font-semibold uppercase text-primary-foreground/55">Platform</p><ul className="mt-4 space-y-3 text-sm text-primary-foreground/85"><li><a href="#products" className="hover:text-accent">Workflow</a></li><li><a href="#solutions" className="hover:text-accent">Payment methods</a></li><li><a href="#developers" className="hover:text-accent">Integrations</a></li></ul></div>
+        <div><p className="text-xs font-semibold uppercase text-primary-foreground/55">Your workspace</p><ul className="mt-4 space-y-3 text-sm text-primary-foreground/85"><li><Link to="/login" className="hover:text-accent">Sign in</Link></li><li><Link to="/signup" className="hover:text-accent">Create account</Link></li><li><a href="#pricing" className="hover:text-accent">Questions</a></li></ul></div>
       </div>
-      <div className="border-t border-border">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 text-xs text-muted-foreground md:flex-row md:px-8">
-          <p>© 2026 PayFlow Gateway. All rights reserved.</p>
-          <p>PCI-DSS Level 1 · SOC 2 Type II · ISO 27001</p>
-        </div>
-      </div>
+      <div className="border-t border-primary-foreground/15"><div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-4 text-xs text-primary-foreground/55 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-10"><span>© {new Date().getFullYear()} PayFlow Gateway</span><span>Payment availability varies by region and account configuration.</span></div></div>
     </footer>
   );
 }
