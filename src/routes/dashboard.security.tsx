@@ -4,6 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 
 export const Route = createFileRoute("/dashboard/security")({
+  head: () => ({ meta: [
+    { title: "Security — PayFlow Gateway" },
+    { name: "description", content: "Review account access controls and available security activity." },
+    { property: "og:title", content: "Security — PayFlow Gateway" },
+    { property: "og:description", content: "Review workspace account controls and security activity." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: SecurityPage,
 });
 

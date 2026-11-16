@@ -11,7 +11,11 @@ export const Route = createFileRoute("/signup")({
   head: () => ({
     meta: [
       { title: "Create account — PayFlow Gateway" },
-      { name: "description", content: "Start accepting global payments with PayFlow." },
+      { name: "description", content: "Create a PayFlow workspace for your business profile, quotations, invoices, and payment links." },
+      { property: "og:title", content: "Create a PayFlow workspace" },
+      { property: "og:description", content: "Set up a workspace for business quotations, invoices, and payment links." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: SignupPage,
@@ -56,8 +60,8 @@ function SignupPage() {
             <div className="grid h-8 w-8 place-items-center rounded-md bg-primary text-primary-foreground font-bold">P</div>
             <span className="font-display text-lg font-bold">PayFlow</span>
           </Link>
-          <h2 className="mt-6 font-display text-3xl font-bold">Start collecting payments</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Free to start. No card required.</p>
+          <h2 className="mt-6 font-display text-3xl font-semibold">Set up your workspace</h2>
+          <p className="mt-2 text-sm text-muted-foreground">Create your business profile to get started.</p>
           <form className="mt-8 space-y-4" onSubmit={submit}>
             <div>
               <Label htmlFor="full_name">Full name</Label>
@@ -93,14 +97,17 @@ function SignupPage() {
           </p>
         </div>
       </div>
-      <div className="hidden flex-col justify-between bg-primary p-10 text-primary-foreground md:flex">
-        <div />
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-accent">Join 12,000+ businesses</p>
-          <blockquote className="mt-4 font-display text-3xl font-bold leading-snug">
-            "PayFlow cut our days-sales-outstanding from 42 to 9. Quote-to-cash is one flow now."
-          </blockquote>
-          <p className="mt-4 text-primary-foreground/70">Ada Okoye · CFO, Northwind Traders</p>
+      <div className="hidden flex-col justify-between border-l border-border bg-primary p-10 text-primary-foreground md:flex lg:p-14">
+        <p className="text-sm font-semibold">PayFlow <span className="font-normal text-primary-foreground/60">Gateway</span></p>
+        <div className="max-w-xl">
+          <p className="text-xs font-semibold uppercase text-accent">A clearer workflow</p>
+          <h1 className="mt-4 font-display text-4xl font-semibold leading-tight lg:text-5xl">From a client-ready quote to a payment link.</h1>
+          <p className="mt-5 max-w-lg text-base leading-7 text-primary-foreground/75">
+            Keep your business details, documents, and payment activity together as your workspace grows.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 border-t border-primary-foreground/20 pt-5 text-sm text-primary-foreground/75">
+            <span>Business profile</span><span>Quotations</span><span>Invoices</span><span>Payment links</span>
+          </div>
         </div>
         <p className="text-xs text-primary-foreground/50">© 2026 PayFlow Gateway</p>
       </div>

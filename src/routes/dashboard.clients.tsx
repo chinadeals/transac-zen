@@ -7,6 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/dashboard/clients")({
+  head: () => ({ meta: [
+    { title: "Clients — PayFlow Gateway" },
+    { name: "description", content: "Review client records and related billing activity in your PayFlow workspace." },
+    { property: "og:title", content: "Clients — PayFlow Gateway" },
+    { property: "og:description", content: "Search and review client records in your business workspace." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: ClientsPage,
 });
 

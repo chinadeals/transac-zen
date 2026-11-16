@@ -20,7 +20,14 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/admin")({
-  head: () => ({ meta: [{ title: "Admin Console — PayFlow Gateway" }] }),
+  head: () => ({ meta: [
+    { title: "Admin Console — PayFlow Gateway" },
+    { name: "description", content: "Review collection accounts, merchant profiles, and current workspace activity." },
+    { property: "og:title", content: "Admin Console — PayFlow Gateway" },
+    { property: "og:description", content: "Review configured collection accounts, merchants, and live workspace activity." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: AdminPage,
 });
 

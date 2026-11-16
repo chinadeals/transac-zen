@@ -82,13 +82,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "PayFlow Gateway lets businesses send quotations, generate invoices, and accept card, bank, and crypto payments worldwide — with enterprise-grade security.",
+          "Create quotations, issue invoices, share payment links, and follow payment activity in one business workspace.",
       },
       { property: "og:title", content: "PayFlow Gateway" },
       {
         property: "og:description",
         content:
-          "Quotations, invoices, and multi-channel payments for modern businesses.",
+          "Quotations, invoices, payment links, and activity in one business workspace.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -100,7 +100,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap",
       },
     ],
   }),

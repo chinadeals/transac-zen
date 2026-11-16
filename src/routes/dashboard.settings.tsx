@@ -4,6 +4,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/dashboard/settings")({
+  head: () => ({ meta: [
+    { title: "Workspace settings — PayFlow Gateway" },
+    { name: "description", content: "Review your business profile and connected payment services." },
+    { property: "og:title", content: "Workspace settings — PayFlow Gateway" },
+    { property: "og:description", content: "Manage business profile details and payment service settings." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: SettingsPage,
 });
 

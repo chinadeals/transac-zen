@@ -6,6 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/transactions")({
+  head: () => ({ meta: [
+    { title: "Transactions — PayFlow Gateway" },
+    { name: "description", content: "Search and review recorded payment activity and statuses." },
+    { property: "og:title", content: "Transactions — PayFlow Gateway" },
+    { property: "og:description", content: "Review payment records, methods, amounts, and statuses." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: TxPage,
 });
 

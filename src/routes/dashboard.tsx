@@ -12,6 +12,10 @@ export const Route = createFileRoute("/dashboard")({
     meta: [
       { title: "Dashboard — PayFlow Gateway" },
       { name: "description", content: "PayFlow Gateway admin dashboard." },
+      { property: "og:title", content: "PayFlow workspace" },
+      { property: "og:description", content: "Manage business documents and follow payment activity." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: DashboardLayout,
@@ -37,7 +41,7 @@ function DashboardLayout() {
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
         <div className="flex flex-1 flex-col">
-          <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur">
+          <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-background px-4">
             <SidebarTrigger />
             <div className="relative hidden max-w-md flex-1 md:block">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -52,8 +56,10 @@ function DashboardLayout() {
               </Button>
             </div>
           </header>
-          <main className="flex-1 p-4 md:p-8">
-            <Outlet />
+          <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
+            <div className="mx-auto w-full max-w-[1440px]">
+              <Outlet />
+            </div>
           </main>
         </div>
       </div>

@@ -3,10 +3,18 @@ import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveCo
 import { clients, monthlyRevenue, paymentMethodBreakdown, fmt } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/dashboard/analytics")({
+  head: () => ({ meta: [
+    { title: "Analytics — PayFlow Gateway" },
+    { name: "description", content: "Explore payment trends and client activity in your PayFlow workspace." },
+    { property: "og:title", content: "Analytics — PayFlow Gateway" },
+    { property: "og:description", content: "Explore payment trends and client activity." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: AnalyticsPage,
 });
 
-const chartColors = ["oklch(0.28 0.09 145)", "oklch(0.55 0.12 145)", "oklch(0.88 0.19 132)"];
+const chartColors = ["var(--color-chart-1)", "var(--color-chart-3)", "var(--color-chart-2)"];
 
 function AnalyticsPage() {
   const topClients = [...clients].sort((a, b) => b.totalBilled - a.totalBilled).slice(0, 6);

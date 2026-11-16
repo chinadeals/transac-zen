@@ -12,6 +12,10 @@ export const Route = createFileRoute("/login")({
     meta: [
       { title: "Sign in — PayFlow Gateway" },
       { name: "description", content: "Sign in to your PayFlow Gateway account." },
+      { property: "og:title", content: "Sign in — PayFlow Gateway" },
+      { property: "og:description", content: "Access your PayFlow business workspace." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: LoginPage,
@@ -44,14 +48,14 @@ function LoginPage() {
           <span className="font-display text-lg font-bold">PayFlow</span>
         </Link>
         <div>
-          <h1 className="font-display text-5xl font-bold leading-tight">
-            The fintech-grade platform for global business payments.
+          <h1 className="max-w-xl font-display text-4xl font-semibold leading-tight lg:text-5xl">
+            Your business payments, in one clear view.
           </h1>
-          <p className="mt-6 text-primary-foreground/70">
-            Quotations, invoices, mobile money, cards, transfers, crypto — all in one dashboard.
+          <p className="mt-5 max-w-lg text-base leading-7 text-primary-foreground/75">
+            Prepare quotations, send invoices, share payment links, and follow activity in your workspace.
           </p>
-          <div className="mt-8 flex items-center gap-3 text-sm text-primary-foreground/70">
-            <ShieldCheck className="h-5 w-5 text-accent" /> PCI-DSS Level 1 · SOC 2 · ISO 27001
+          <div className="mt-8 flex items-center gap-3 border-t border-primary-foreground/20 pt-5 text-sm text-primary-foreground/75">
+            <ShieldCheck className="h-5 w-5 text-accent" /> Workspace access tied to your account
           </div>
         </div>
         <p className="text-xs text-primary-foreground/50">© 2026 PayFlow Gateway</p>
@@ -65,7 +69,7 @@ function LoginPage() {
               <span className="font-display text-lg font-bold">PayFlow</span>
             </Link>
           </div>
-          <h2 className="mt-6 font-display text-3xl font-bold">Welcome back</h2>
+          <h2 className="mt-8 font-display text-3xl font-semibold">Welcome back</h2>
           <p className="mt-2 text-sm text-muted-foreground">Sign in to your PayFlow workspace.</p>
           <form className="mt-8 space-y-4" onSubmit={submit}>
             <div>
