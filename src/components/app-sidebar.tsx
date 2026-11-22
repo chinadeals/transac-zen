@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   ShieldAlert,
   LogOut,
+  Layers3,
 } from "lucide-react";
 
 import {
@@ -63,7 +64,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
         <Link to="/" className="flex items-center gap-2 px-2 py-2">
-          <div className="grid h-8 w-8 place-items-center rounded-md bg-accent text-accent-foreground font-bold">P</div>
+          <div className="grid h-8 w-8 place-items-center rounded-md bg-accent text-accent-foreground"><Layers3 className="h-4 w-4" /></div>
           <div className="flex flex-col leading-tight group-data-[collapsible=icon]:hidden">
             <span className="font-display font-bold text-sidebar-foreground">PayFlow</span>
             <span className="text-[10px] uppercase tracking-widest text-sidebar-foreground/60">Gateway</span>
