@@ -75,8 +75,8 @@ function InvoicesPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className="space-y-7">
+      <header className="flex flex-wrap items-end justify-between gap-4 border-b border-border pb-6">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Invoices</p>
           <h1 className="mt-1 font-display text-3xl font-bold md:text-4xl">Invoices</h1>
@@ -92,7 +92,7 @@ function InvoicesPage() {
             <Plus className="mr-1 h-4 w-4" /> New invoice
           </Button>
         </div>
-      </div>
+      </header>
 
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -100,14 +100,14 @@ function InvoicesPage() {
       </div>
 
       {loading ? (
-        <div className="rounded-2xl border border-border bg-card p-10 text-center text-sm text-muted-foreground">
+        <div className="border-y border-border py-12 text-center text-sm text-muted-foreground">
           Loading your invoices…
         </div>
       ) : filtered.length === 0 ? (
         <EmptyState onCreate={() => setOpen(true)} />
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-border bg-card">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto border-y border-border">
+          <table className="w-full min-w-[760px] text-sm">
             <thead>
               <tr className="border-b border-border bg-secondary/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
                 <th className="px-4 py-3 font-medium">Number</th>
@@ -166,7 +166,7 @@ function InvoicesPage() {
 
 function EmptyState({ onCreate }: { onCreate: () => void }) {
   return (
-    <div className="rounded-2xl border border-dashed border-border bg-card p-12 text-center">
+    <div className="border-y border-dashed border-border px-5 py-12 text-center">
       <FileText className="mx-auto h-10 w-10 text-muted-foreground" />
       <h2 className="mt-4 font-display text-xl font-bold">No invoices yet</h2>
       <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">

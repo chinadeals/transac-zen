@@ -44,7 +44,7 @@ export const Route = createFileRoute("/dashboard/")({
   component: OverviewPage,
 });
 
-const chartColors = ["oklch(0.28 0.09 145)", "oklch(0.55 0.12 145)", "oklch(0.88 0.19 132)", "oklch(0.7 0.1 200)"];
+const chartColors = ["var(--color-chart-1)", "var(--color-chart-3)", "var(--color-chart-2)", "var(--color-chart-4)"];
 
 function OverviewPage() {
   const { user } = useCurrentUser();
@@ -73,10 +73,10 @@ function OverviewPage() {
   const hasData = !!stats && (stats.invoiceCount > 0 || stats.quotationCount > 0);
 
   return (
-    <div className="space-y-6">
+      <div className="space-y-7">
       <OnboardingWizard />
 
-      <div className="flex flex-wrap items-end justify-between gap-4">
+      <header className="flex flex-wrap items-end justify-between gap-4 border-b border-border pb-6">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Overview</p>
           <h1 className="mt-1 font-display text-3xl font-bold md:text-4xl">
@@ -94,9 +94,9 @@ function OverviewPage() {
             <Plus className="mr-1 h-4 w-4" /> New invoice
           </Button>
         </div>
-      </div>
+      </header>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 border-b border-border pb-6 sm:grid-cols-2 xl:grid-cols-4">
         <Kpi
           icon={Wallet}
           label="Collected revenue"
@@ -124,7 +124,7 @@ function OverviewPage() {
       </div>
 
       {!loading && !hasData && (
-        <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center">
+        <div className="border-y border-dashed border-border px-5 py-10 text-center">
           <Receipt className="mx-auto h-10 w-10 text-muted-foreground" />
           <h2 className="mt-4 font-display text-xl font-bold">Your dashboard is ready</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
@@ -137,8 +137,8 @@ function OverviewPage() {
         </div>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="rounded-2xl border border-border bg-card p-6 lg:col-span-2">
+      <div className="grid gap-6 lg:grid-cols-3">
+        <section className="min-w-0 border-y border-border py-5 sm:py-6 lg:col-span-2">
           <h2 className="font-display text-lg font-bold">Collected — last 6 months</h2>
           <div className="mt-6 h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -149,17 +149,17 @@ function OverviewPage() {
                     <stop offset="100%" stopColor="oklch(0.28 0.09 145)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.9 0.01 145)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                 <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip formatter={(v: number) => fmt(v, c)} />
-                <Area type="monotone" dataKey="revenue" stroke="oklch(0.28 0.09 145)" fill="url(#rev)" strokeWidth={2} />
+                <Area type="monotone" dataKey="revenue" stroke="var(--color-primary)" fill="url(#rev)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </section>
 
-        <div className="rounded-2xl border border-border bg-card p-6">
+        <section className="min-w-0 border-y border-border py-5 sm:py-6">
           <h2 className="font-display text-lg font-bold">Payment rails</h2>
           {stats?.methodBreakdown.length ? (
             <div className="mt-4 h-56">
@@ -191,10 +191,10 @@ function OverviewPage() {
               </li>
             ))}
           </ul>
-        </div>
+        </section>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+      <section className="overflow-hidden border-y border-border">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <h2 className="font-display text-lg font-bold">Recent payments</h2>
           <Button asChild variant="ghost" size="sm">
@@ -204,7 +204,8 @@ function OverviewPage() {
           </Button>
         </div>
         {stats?.recent.length ? (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="border-b border-border bg-secondary/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
                 <th className="px-4 py-3 font-medium">Reference</th>
@@ -226,12 +227,13 @@ function OverviewPage() {
               ))}
             </tbody>
           </table>
+          </div>
         ) : (
           <p className="px-4 py-8 text-center text-sm text-muted-foreground">
             No payments recorded yet.
           </p>
         )}
-      </div>
+      </section>
 
       <CreateDocDialog
         open={dialog !== null}
@@ -254,7 +256,7 @@ function Kpi({
   hint: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-5">
+    <div className="min-w-0 border-l border-border px-4 py-2 first:border-l-0 first:pl-0">
       <div className="flex items-center justify-between">
         <p className="text-xs uppercase tracking-widest text-muted-foreground">{label}</p>
         <Icon className="h-4 w-4 text-primary" />
