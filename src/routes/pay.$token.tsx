@@ -45,6 +45,10 @@ export const Route = createFileRoute("/pay/$token")({
     meta: [
       { title: "Complete your payment — PayFlow Gateway" },
       { name: "description", content: "Review your order and pay securely." },
+      { property: "og:title", content: "Payment link — PayFlow Gateway" },
+      { property: "og:description", content: "Review the document details and available payment options." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -136,7 +140,9 @@ function PayPage() {
 
   const total = useMemo(() => (doc ? docTotal(doc) : 0), [doc]);
 
-  if (!loaded) return null;
+  if (!loaded) {
+    return <div className="flex min-h-screen items-center justify-center gap-2 text-sm text-muted-foreground" role="status"><Loader2 className="h-4 w-4 animate-spin" /> Loading payment link…</div>;
+  }
   if (!doc) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -206,9 +212,7 @@ function PayPage() {
             <span className="hidden items-center gap-1 sm:flex">
               <Globe2 className="h-3 w-3" /> {region}
             </span>
-            <span className="flex items-center gap-1">
-              <Lock className="h-3 w-3" /> Secure checkout
-            </span>
+            <span className="flex items-center gap-1"><Lock className="h-3 w-3" /> Payment link</span>
           </div>
         </div>
       </header>
@@ -229,9 +233,9 @@ function PayPage() {
                 onBack={() => setStep("review")}
                 onNext={() => setStep("details")}
               />
-            ) : (
+            ) : method ? (
               <DetailsCard
-                method={method!}
+                method={method}
                 doc={doc}
                 total={total}
                 onBack={() => setStep("method")}
@@ -241,6 +245,8 @@ function PayPage() {
                 phone={momoPhone}
                 onPhoneChange={setMomoPhone}
               />
+            ) : (
+              <MethodCard selected={method} onSelect={setMethod} onBack={() => setStep("review")} onNext={() => setStep("details")} />
             )}
           </div>
 
@@ -294,7 +300,7 @@ function Stepper({ current, kind }: { current: Step; kind: PayDoc["kind"] }) {
 
 function ReviewCard({ doc, onNext }: { doc: PayDoc; onNext: () => void }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 animate-fade-in">
+    <div className="rounded-md border border-border bg-card p-5 sm:p-6 animate-fade-in">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-xs uppercase tracking-widest text-muted-foreground">
@@ -308,7 +314,7 @@ function ReviewCard({ doc, onNext }: { doc: PayDoc; onNext: () => void }) {
 
       <div className="mt-6 space-y-3">
         {doc.items.map((it) => (
-          <div key={it.id} className="flex gap-4 rounded-xl border border-border bg-secondary/30 p-3 transition hover:border-primary/40">
+          <div key={it.id} className="flex gap-4 rounded-md border border-border bg-secondary/30 p-3 transition hover:border-primary/40">
             <img src={it.image} alt={it.name} className="h-24 w-24 flex-shrink-0 rounded-lg object-cover" />
             <div className="flex-1">
               <div className="flex items-start justify-between gap-3">
@@ -353,26 +359,29 @@ function MethodCard({
   onNext: () => void;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 animate-fade-in">
+    <div className="rounded-md border border-border bg-card p-5 sm:p-6 animate-fade-in">
       <h2 className="font-display text-2xl font-bold">Choose payment method</h2>
-      <p className="mt-1 text-sm text-muted-foreground">All methods are processed through PayFlow's secure gateway.</p>
+      <p className="mt-1 text-sm text-muted-foreground">Availability depends on the sender’s configured providers and your region.</p>
 
       <div className="mt-5 space-y-2">
         {METHODS.map((m) => {
           const Icon = m.icon;
           const active = selected === m.id;
           return (
-            <button
+            <Button
+              type="button"
+              variant="outline"
               key={m.id}
               onClick={() => onSelect(m.id)}
-              className={`flex w-full items-center gap-3 rounded-xl border p-4 text-left transition ${
-                active ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:bg-secondary/40"
+              aria-pressed={active}
+              className={`h-auto w-full justify-start gap-3 whitespace-normal rounded-md p-4 text-left ${
+                active ? "border-primary bg-primary/5" : "hover:bg-secondary/40"
               }`}
             >
-              <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${active ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"}`}>
+              <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-md ${active ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"}`}>
                 <Icon className="h-5 w-5" />
-              </div>
-              <div className="flex-1">
+              </span>
+              <span className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <p className="font-medium">{m.label}</p>
                   {m.badge && (
@@ -382,9 +391,9 @@ function MethodCard({
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">{m.hint}</p>
-              </div>
-              <div className={`h-4 w-4 rounded-full border ${active ? "border-primary bg-primary" : "border-border"}`} />
-            </button>
+              </span>
+              <span aria-hidden="true" className={`h-4 w-4 shrink-0 rounded-full border ${active ? "border-primary bg-primary" : "border-border"}`} />
+            </Button>
           );
         })}
       </div>
@@ -427,7 +436,7 @@ function DetailsCard({
   const isMomo = !!momoDef;
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 animate-fade-in">
+    <div className="rounded-md border border-border bg-card p-5 sm:p-6 animate-fade-in">
       <h2 className="font-display text-2xl font-bold">Payment details</h2>
       <p className="mt-1 text-sm text-muted-foreground">Paying with {method}</p>
 
@@ -459,10 +468,7 @@ function MobileMoneyForm({ method, amountLabel, country, phone, onPhoneChange }:
     <div className="space-y-3">
       <div className="rounded-xl bg-secondary/40 p-4 text-sm">
         <div className="flex items-center gap-2 font-medium"><Smartphone className="h-4 w-4 text-primary" /> {method}</div>
-        <p className="mt-1 text-muted-foreground">
-          Enter the mobile-money number to receive the STK push. Confirm on your phone with your PIN.
-          {currency ? <> Amount is displayed in {currency}.</> : null}
-        </p>
+          <p className="mt-1 text-muted-foreground">Enter the number associated with your mobile-money account. Availability depends on the sender’s provider setup and your region.</p>
       </div>
       <div>
         <Label>Mobile money number</Label>
@@ -479,53 +485,23 @@ function MobileMoneyForm({ method, amountLabel, country, phone, onPhoneChange }:
           <Input readOnly value="PayFlow" className="mt-1.5 font-mono text-xs" />
         </div>
       </div>
-      <p className="flex items-center gap-1 text-xs text-muted-foreground">
-        <Lock className="h-3 w-3" /> Push encrypted end-to-end · PIN never leaves your device
-      </p>
+      <p className="flex items-center gap-1 text-xs text-muted-foreground"><Lock className="h-3 w-3" /> Never enter your mobile-money PIN on this page.</p>
     </div>
   );
 }
 
 function CardForm() {
-  const [num, setNum] = useState("");
-  const formatted = num.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
   return (
-    <>
-      <div>
-        <Label>Cardholder name</Label>
-        <Input placeholder="Name on card" />
-      </div>
-      <div>
-        <Label>Card number</Label>
-        <Input placeholder="4242 4242 4242 4242" value={formatted} onChange={(e) => setNum(e.target.value)} inputMode="numeric" />
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <Label>Expiry</Label>
-          <Input placeholder="MM / YY" inputMode="numeric" />
-        </div>
-        <div>
-          <Label>CVC</Label>
-          <Input placeholder="123" inputMode="numeric" maxLength={4} />
-        </div>
-      </div>
-      <p className="flex items-center gap-1 text-xs text-muted-foreground">
-        <Lock className="h-3 w-3" /> Encrypted with TLS 1.3 · Never stored
-      </p>
-    </>
+    <div className="rounded-md border border-border bg-secondary/30 p-4 text-sm text-muted-foreground">
+      Card availability is checked when you continue. No card details are requested unless a supported processor is available.
+    </div>
   );
 }
 
 function BankInstructions({ doc }: { doc: PayDoc }) {
   return (
-    <div className="rounded-xl bg-secondary/40 p-4 text-sm">
-      <p className="font-medium">Transfer to:</p>
-      <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-muted-foreground">
-        <dt>Bank</dt><dd className="text-foreground">PayFlow Trust NA</dd>
-        <dt>Account</dt><dd className="font-mono text-foreground">0021 4488 9910</dd>
-        <dt>Routing</dt><dd className="font-mono text-foreground">026 073 150</dd>
-        <dt>Reference</dt><dd className="font-mono text-foreground">{doc.number}</dd>
-      </dl>
+    <div className="rounded-md border border-border bg-secondary/30 p-4 text-sm text-muted-foreground">
+      Bank transfer availability is checked when you continue. Transfer details appear only when a supported destination is configured.
     </div>
   );
 }
@@ -625,29 +601,26 @@ function RegionBlockedDialog({
           <DialogTitle className="text-center">Not available in {region}</DialogTitle>
           <DialogDescription className="text-center">
             {method ? `${method} payments` : "This payment method"} could not be authorized for your region right now.
-            Complete this order instantly with mobile money or crypto — no account needed.
+            Other payment options may be available depending on the sender’s provider setup and your region.
           </DialogDescription>
         </DialogHeader>
 
         <div className="mt-2 space-y-2">
-          <button onClick={() => onSwitch("M-Pesa")}
-            className="flex w-full items-center gap-3 rounded-xl border border-border p-3 text-left transition hover:border-primary hover:bg-primary/5">
+          <Button variant="outline" onClick={() => onSwitch("M-Pesa")} className="h-auto w-full justify-start gap-3 whitespace-normal rounded-md p-3 text-left">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary"><Smartphone className="h-4 w-4" /></div>
             <div className="flex-1"><p className="text-sm font-semibold">Pay with M-Pesa</p><p className="text-xs text-muted-foreground">STK push · Instant</p></div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
-          </button>
-          <button onClick={() => onSwitch("MTN MoMo")}
-            className="flex w-full items-center gap-3 rounded-xl border border-border p-3 text-left transition hover:border-primary hover:bg-primary/5">
+          </Button>
+          <Button variant="outline" onClick={() => onSwitch("MTN MoMo")} className="h-auto w-full justify-start gap-3 whitespace-normal rounded-md p-3 text-left">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary"><Smartphone className="h-4 w-4" /></div>
-            <div className="flex-1"><p className="text-sm font-semibold">Pay with MTN MoMo</p><p className="text-xs text-muted-foreground">Instant · UG · GH · RW · CI</p></div>
+            <div className="flex-1"><p className="text-sm font-semibold">Pay with MTN MoMo</p><p className="text-xs text-muted-foreground">Provider availability varies by country</p></div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
-          </button>
-          <button onClick={() => onSwitch("USDT (TRC20)")}
-            className="flex w-full items-center gap-3 rounded-xl border border-border p-3 text-left transition hover:border-primary hover:bg-primary/5">
+          </Button>
+          <Button variant="outline" onClick={() => onSwitch("USDT (TRC20)")} className="h-auto w-full justify-start gap-3 whitespace-normal rounded-md p-3 text-left">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary"><Bitcoin className="h-4 w-4" /></div>
-            <div className="flex-1"><p className="text-sm font-semibold">Pay with USDT (TRC20)</p><p className="text-xs text-muted-foreground">Stablecoin · ~1 min · lowest fees</p></div>
+            <div className="flex-1"><p className="text-sm font-semibold">Pay with USDT (TRC20)</p><p className="text-xs text-muted-foreground">Check the network and wallet before sending</p></div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
-          </button>
+          </Button>
         </div>
 
 
@@ -668,13 +641,13 @@ function SuccessCard({ doc }: { doc: PayDoc }) {
     setTimeout(() => setCopied(false), 1800);
   };
   return (
-    <div className="rounded-2xl border border-border bg-card p-8 text-center animate-scale-in">
+      <div className="rounded-md border border-border bg-card p-6 text-center animate-scale-in sm:p-8">
       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
         <CheckCircle2 className="h-9 w-9" />
       </div>
       <h2 className="mt-4 font-display text-2xl font-bold">Payment received</h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        Thank you! A receipt for {doc.number} has been sent to {doc.clientEmail || "your email"}.
+        The payment record for {doc.number} is ready. Use the receipt link below to view or share it.
       </p>
       {doc.paidWith && (
         <p className="mt-1 text-xs text-muted-foreground">Method: {doc.paidWith}</p>
@@ -705,7 +678,7 @@ function SuccessCard({ doc }: { doc: PayDoc }) {
 
 function SummaryCard({ doc, total }: { doc: PayDoc; total: number }) {
   return (
-    <div className="sticky top-6 space-y-4 rounded-2xl border border-border bg-card p-5">
+    <div className="space-y-4 rounded-md border border-border bg-card p-5 md:sticky md:top-6">
       <div>
         <p className="text-xs uppercase tracking-widest text-muted-foreground">Amount due</p>
         <p className="mt-1 font-display text-3xl font-bold">{fmt(total, doc.currency)}</p>
@@ -722,12 +695,12 @@ function SummaryCard({ doc, total }: { doc: PayDoc; total: number }) {
         <span>Total</span>
         <span>{fmt(total, doc.currency)}</span>
       </div>
-      <div className="rounded-xl bg-secondary/40 p-3 text-xs text-muted-foreground">
+      <div className="rounded-md bg-secondary/40 p-3 text-xs text-muted-foreground">
         <div className="flex items-center gap-2 text-foreground">
           <ShieldCheck className="h-4 w-4 text-primary" />
-          <span className="font-medium">Protected checkout</span>
+          <span className="font-medium">Payment availability</span>
         </div>
-        PCI-DSS Level 1 · 3-D Secure · Instant receipt
+        Methods depend on your region and the sender’s configured providers.
       </div>
     </div>
   );
